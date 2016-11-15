@@ -1,106 +1,91 @@
-from conans import ConanFile, CMake, tools, ConfigureEnvironment
+from conans import ConanFile, CMake, tools
 import os
 import shutil
 
 
-class ProtobufConan(ConanFile):
-    name = "Protobuf"
-    version = "2.6.1"
-    url = "https://github.com/memsharded/conan-protobuf.git"
-    license = "https://github.com/google/protobuf/blob/v2.6.1/LICENSE"
-    requires = "zlib/1.2.8@lasote/stable"
+class gRPCConan(ConanFile):
+    name = "gRPC"
+    version = "1.1.0-dev" # Nov 8
+    folder = "grpc-31606bdb34474d8728350ad45baf0e91b590b041"
+    url = "https://github.com/inexor-game/conan-grpc.git"
+    license = "BSD-3Clause"
+    requires = "zlib/1.2.8@lasote/stable", "OpenSSL/1.0.2i@lasote/stable", "Protobuf/3.1.0@a_teammate/testing"
     settings = "os", "compiler", "build_type", "arch"
-    exports = "CMakeLists.txt", "lib*.cmake", "extract_includes.bat.in", "protoc.cmake", "tests.cmake", "change_dylib_names.sh"
-    options = {"shared": [True, False]}
-    default_options = "shared=True"
+    options = {
+            "shared": [True, False],
+            "enable_mobile": [True, False], # Enables iOS and Android support
+            "non_cpp_plugins":[True, False] # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
+            }
+    default_options = '''shared=False
+    enable_mobile=False
+    non_cpp_plugins=False
+    '''
     generators = "cmake"
-
-    def config(self):
-        self.options["zlib"].shared = self.options.shared
+    short_paths = True # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
 
     def source(self):
-        tools.download("https://github.com/google/protobuf/"
-                       "releases/download/v2.6.1/protobuf-2.6.1.zip",
-                       "protobuf.zip")
-        tools.unzip("protobuf.zip")
-        os.unlink("protobuf.zip")
-        os.makedirs("protobuf-2.6.1/cmake")
-        shutil.move("CMakeLists.txt", "protobuf-2.6.1/cmake")
-        shutil.move("libprotobuf.cmake", "protobuf-2.6.1/cmake")
-        shutil.move("libprotobuf-lite.cmake", "protobuf-2.6.1/cmake")
-        shutil.move("libprotoc.cmake", "protobuf-2.6.1/cmake")
-        shutil.move("protoc.cmake", "protobuf-2.6.1/cmake")
-        shutil.move("tests.cmake", "protobuf-2.6.1/cmake")
-        shutil.move("extract_includes.bat.in", "protobuf-2.6.1/cmake")
-        shutil.move("change_dylib_names.sh", "protobuf-2.6.1/cmake")
+        tools.download("https://github.com/grpc/grpc/archive/31606bdb34474d8728350ad45baf0e91b590b041.zip", "grpc.zip")
+        tools.unzip("grpc.zip")
+        os.unlink("grpc.zip")
+        cmake_name = "%s/CMakeLists.txt" % self.folder
+        
+        # tell grpc to use our deps and flags
+        tools.replace_in_file(cmake_name, "project(${PACKAGE_NAME} C CXX)", '''project(${PACKAGE_NAME} C CXX)
+        include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+        conan_basic_setup()''')
+        tools.replace_in_file(cmake_name, "\"module\" CACHE STRING ", '''\"package\" CACHE STRING ''') # tell grpc to use the find_package version
+        # never install manually, but let conan do it
+        tools.replace_in_file(cmake_name, "gRPC_INSTALL ON", "gRPC_INSTALL OFF")
+        tools.replace_in_file(cmake_name, '''  install(FILES ${_hdr}
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+  )''', '''  # install(FILES ${_hdr} # COMMENTED BY CONAN
+    # DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+  # )''')
+        
+        # Add some CMake Variables (effectively commenting out stuff we do not support)
+        tools.replace_in_file(cmake_name, "add_library(grpc_cronet", '''if(CONAN_ENABLE_MOBILE)
+        add_library(grpc_cronet''')
+        tools.replace_in_file(cmake_name, "add_library(grpc_unsecure", '''endif(CONAN_ENABLE_MOBILE)
+        add_library(grpc_unsecure''')
+        tools.replace_in_file(cmake_name, "add_library(grpc++_cronet", '''if(CONAN_ENABLE_MOBILE)
+        add_library(grpc++_cronet''')
+        tools.replace_in_file(cmake_name, "add_library(grpc++_reflection", '''endif(CONAN_ENABLE_MOBILE)
+        if(CONAN_ENABLE_REFLECTION_LIBS)
+        add_library(grpc++_reflection''')
+        tools.replace_in_file(cmake_name, "add_library(grpc++_unsecure", '''endif(CONAN_ENABLE_REFLECTION_LIBS)
+        add_library(grpc++_unsecure''')
+        tools.replace_in_file(cmake_name, "add_library(grpc_csharp_ext", '''if(CONAN_ADDITIONAL_PLUGINS)
+        add_library(grpc_csharp_ext''')
+        tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''endif(CONAN_ADDITIONAL_PLUGINS)
+        if(CONAN_ADDITIONAL_BINS)
+        add_executable(gen_hpack_tables''')
+        tools.replace_in_file(cmake_name, "add_executable(grpc_cpp_plugin", '''endif(CONAN_ADDITIONAL_BINS)
+        add_executable(grpc_cpp_plugin''')
+        tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
+        add_executable(grpc_csharp_plugin''')
+        tools.replace_in_file(cmake_name, '''target_link_libraries(grpc_ruby_plugin
+  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
+  grpc_plugin_support
+)''', '''target_link_libraries(grpc_ruby_plugin
+  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
+  grpc_plugin_support
+)
+endif(CONAN_ADDITIONAL_PLUGINS)''')
 
     def build(self):
-        if self.settings.os == "Windows":
-            args = ['-DBUILD_TESTING=OFF']
-            args += ['-DBUILD_SHARED_LIBS=%s' % ('ON' if self.options.shared else 'OFF')]
-            cmake = CMake(self.settings)
-            self.run('cd protobuf-2.6.1/cmake && cmake . %s %s' % (cmake.command_line, ' '.join(args)))
-            self.run("cd protobuf-2.6.1/cmake && cmake --build . %s" % cmake.build_config)
-        else:
-            env = ConfigureEnvironment(self.deps_cpp_info, self.settings)
-
-            concurrency = 1
-            try:
-                import multiprocessing
-                concurrency = multiprocessing.cpu_count()
-            except (ImportError, NotImplementedError):
-                pass
-
-            self.run("chmod +x protobuf-2.6.1/autogen.sh")
-            self.run("chmod +x protobuf-2.6.1/configure")
-            self.run("cd protobuf-2.6.1 && ./autogen.sh")
-
-            args = []
-            if not self.options.shared:
-                args += ['--disable-shared']
-
-            self.run("cd protobuf-2.6.1 && %s ./configure %s" % (env.command_line, ' '.join(args)))
-            self.run("cd protobuf-2.6.1 && make -j %s" % concurrency)
+        cmake = CMake(self.settings)
+        self.run('cmake %s/%s %s' % (self.conanfile_directory, self.folder, cmake.command_line))
+        self.run("cmake --build . %s" % cmake.build_config)
 
     def package(self):
-        self.copy_headers("*.h", "protobuf-2.6.1/src")
-
-        if self.settings.os == "Windows":
-            self.copy("*.lib", "lib", "protobuf-2.6.1/cmake", keep_path=False)
-            self.copy("protoc.exe", "bin", "protobuf-2.6.1/cmake/bin", keep_path=False)
-
-            if self.options.shared:
-                self.copy("*.dll", "bin", "protobuf-2.6.1/cmake/bin", keep_path=False)
-        else:
-            # Copy the libs to lib
-            if not self.options.shared:
-                self.copy("*.a", "lib", "protobuf-2.6.1/src/.libs", keep_path=False)
-            else:
-                self.copy("*.so*", "lib", "protobuf-2.6.1/src/.libs", keep_path=False)
-                self.copy("*.9.dylib", "lib", "protobuf-2.6.1/src/.libs", keep_path=False)
-
-            # Copy the exe to bin
-            if self.settings.os == "Macos":
-                if not self.options.shared:
-                    self.copy("protoc", "bin", "protobuf-2.6.1/src/", keep_path=False)
-                else:
-                    # "protoc" has libproto*.dylib dependencies with absolute file paths.
-                    # Change them to be relative.
-                    self.run("cd protobuf-2.6.1/src/.libs && bash ../../cmake/change_dylib_names.sh")
-
-                    # "src/protoc" may be a wrapper shell script which execute "src/.libs/protoc".
-                    # Copy "src/.libs/protoc" instead of "src/protoc"
-                    self.copy("protoc", "bin", "protobuf-2.6.1/src/.libs/", keep_path=False)
-                    self.copy("*.9.dylib", "bin", "protobuf-2.6.1/src/.libs", keep_path=False)
-            else:
-                self.copy("protoc", "bin", "protobuf-2.6.1/src/", keep_path=False)
+        self.copy('*', dst='include', src='include')
+        self.copy("*.lib", dst="lib", src="", keep_path=False)
+        self.copy("*.a", dst="lib", src="", keep_path=False)
+        self.copy("*", dst="bin", src="bin")
+        self.copy("*.dll", dst="bin", keep_path=False)
+        self.copy("*.so", dst="lib", keep_path=False)
 
     def package_info(self):
-        if self.settings.os == "Windows":
-            self.cpp_info.libs = ["libprotobuf"]
-            if self.options.shared:
-                self.cpp_info.defines = ["PROTOBUF_USE_DLLS"]
-        elif self.settings.os == "Macos":
-            self.cpp_info.libs = ["libprotobuf.a"] if not self.options.shared else ["libprotobuf.9.dylib"]
-        else:
-            self.cpp_info.libs = ["libprotobuf.a"] if not self.options.shared else ["libprotobuf.so.9"]
+        self.cpp_info.libs = ["gpr", "grpc", "grpc++", "grpc_unsecure", "grpc++_unsecure"]
+        if self.settings.compiler == "Visual Studio":
+            self.cpp_info.libs += ["wsock32", "ws2_32"]
