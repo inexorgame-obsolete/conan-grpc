@@ -42,30 +42,31 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(PACKAGE_NAME      "grpc")
-set(PACKAGE_VERSION   "1.1.0-dev")
+set(PACKAGE_VERSION   "31606bdb34474d8728350ad45baf0e91b590b041")
 set(PACKAGE_STRING    "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME   "${PACKAGE_NAME}-${PACKAGE_VERSION}")
 set(PACKAGE_BUGREPORT "https://github.com/grpc/grpc/issues/")
+
 project(${PACKAGE_NAME} C CXX)
 
-if (NOT MSVC)
-  set(gRPC_INSTALL ON CACHE BOOL "Generate installation target")
-else()
-  set(gRPC_INSTALL OFF CACHE BOOL "Generate installation target")
-endif()
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
 
-set(gRPC_ZLIB_PROVIDER "module" CACHE STRING "Provider of zlib library")
+set(gRPC_INSTALL OFF CACHE BOOL "Generate installation target")
+#NOTE module -> package
+set(gRPC_ZLIB_PROVIDER "package" CACHE STRING "Provider of zlib library")
 set_property(CACHE gRPC_ZLIB_PROVIDER PROPERTY STRINGS "module" "package")
 
-set(gRPC_SSL_PROVIDER "module" CACHE STRING "Provider of ssl library")
+set(gRPC_SSL_PROVIDER "package" CACHE STRING "Provider of ssl library")
 set_property(CACHE gRPC_SSL_PROVIDER PROPERTY STRINGS "module" "package")
 
-set(gRPC_PROTOBUF_PROVIDER "module" CACHE STRING "Provider of protobuf library")
+set(gRPC_PROTOBUF_PROVIDER "package" CACHE STRING "Provider of protobuf library")
 set_property(CACHE gRPC_PROTOBUF_PROVIDER PROPERTY STRINGS "module" "package")
 
 set(gRPC_USE_PROTO_LITE OFF CACHE BOOL "Use the protobuf-lite library")
+# NOTE always disable
 
-if (MSVC)
+if (MSVC) # NOTE
   add_definitions( -D_WIN32_WINNT=0x600 )
 endif()
 
@@ -161,13 +162,14 @@ if(NOT MSVC)
 endif()
 
 if(WIN32 AND MSVC)
-  set(_gRPC_BASELIB_LIBRARIES wsock32 ws2_32)
+  set(_gRPC_BASELIB_LIBRARIES wsock32 ws2_32) #NOTE
 endif()
 
-include(GNUInstallDirs)
-if(NOT DEFINED CMAKE_INSTALL_CMAKEDIR)
-  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/gRPC")
-endif()
+# NOTE
+# include(GNUInstallDirs)
+# if(NOT DEFINED CMAKE_INSTALL_CMAKEDIR)
+#  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/gRPC")
+# endif()
 
   
 add_library(gpr
@@ -273,19 +275,10 @@ foreach(_hdr
 )
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
-  install(FILES ${_hdr}
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
-  )
+  # install(FILES ${_hdr}
+  #  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+  # ) #NOTE
 endforeach()
-
-  
-if (gRPC_INSTALL)
-  install(TARGETS gpr EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
 
   
 add_library(grpc
@@ -546,21 +539,13 @@ foreach(_hdr
 )
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
-  install(FILES ${_hdr}
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
-  )
+  # install(FILES ${_hdr}
+  #  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+  # ) #NOTE
 endforeach()
 
-  
-if (gRPC_INSTALL)
-  install(TARGETS grpc EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
+if(CONAN_ENABLE_MOBILE) # NOTE commenting out cronet: the iOS and Android networking stack
 
-  
 add_library(grpc_cronet
   src/core/lib/surface/init.c
   src/core/lib/channel/channel_args.c
@@ -759,6 +744,7 @@ target_link_libraries(grpc_cronet
   ${_gRPC_SSL_LIBRARIES}
   gpr
 )
+endif()
 
 foreach(_hdr
   include/grpc/byte_buffer.h
@@ -790,21 +776,12 @@ foreach(_hdr
 )
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
-  install(FILES ${_hdr}
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
-  )
+  # install(FILES ${_hdr}
+  #  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+  # ) #NOTE
 endforeach()
 
-  
-if (gRPC_INSTALL)
-  install(TARGETS grpc_cronet EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
 
-  
 add_library(grpc_unsecure
   src/core/lib/surface/init.c
   src/core/lib/surface/init_unsecure.c
@@ -1032,9 +1009,9 @@ foreach(_hdr
 )
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
-  install(FILES ${_hdr}
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
-  )
+  # install(FILES ${_hdr}
+  #  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+  # ) #NOTE
 endforeach()
 
   
@@ -1056,33 +1033,33 @@ add_library(grpc++
   src/cpp/common/secure_create_auth_context.cc
   src/cpp/server/insecure_server_credentials.cc
   src/cpp/server/secure_server_credentials.cc
-  src/cpp/client/channel_cc.cc
+  src/cpp/client/channel.cc
   src/cpp/client/client_context.cc
   src/cpp/client/create_channel.cc
   src/cpp/client/create_channel_internal.cc
   src/cpp/client/create_channel_posix.cc
-  src/cpp/client/credentials_cc.cc
+  src/cpp/client/credentials.cc
   src/cpp/client/generic_stub.cc
   src/cpp/common/channel_arguments.cc
   src/cpp/common/channel_filter.cc
-  src/cpp/common/completion_queue_cc.cc
+  src/cpp/common/completion_queue.cc
   src/cpp/common/core_codegen.cc
-  src/cpp/common/resource_quota_cc.cc
+  src/cpp/common/resource_quota.cc
   src/cpp/common/rpc_method.cc
   src/cpp/server/async_generic_service.cc
   src/cpp/server/create_default_thread_pool.cc
   src/cpp/server/dynamic_thread_pool.cc
   src/cpp/server/server_builder.cc
-  src/cpp/server/server_cc.cc
+  src/cpp/server/server.cc
   src/cpp/server/server_context.cc
   src/cpp/server/server_credentials.cc
   src/cpp/server/server_posix.cc
   src/cpp/thread_manager/thread_manager.cc
-  src/cpp/util/byte_buffer_cc.cc
-  src/cpp/util/slice_cc.cc
+  src/cpp/util/byte_buffer.cc
+  src/cpp/util/slice.cc
   src/cpp/util/status.cc
   src/cpp/util/string_ref.cc
-  src/cpp/util/time_cc.cc
+  src/cpp/util/time.cc
   src/cpp/codegen/codegen_init.cc
 )
 
@@ -1193,53 +1170,44 @@ foreach(_hdr
 )
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
-  install(FILES ${_hdr}
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
-  )
+  # install(FILES ${_hdr}
+  #  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+  # ) #NOTE
 endforeach()
 
-  
-if (gRPC_INSTALL)
-  install(TARGETS grpc++ EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-  
+if(CONAN_ENABLE_MOBILE)
 add_library(grpc++_cronet
   src/cpp/client/cronet_credentials.cc
   src/cpp/client/insecure_credentials.cc
   src/cpp/common/insecure_create_auth_context.cc
   src/cpp/server/insecure_server_credentials.cc
-  src/cpp/client/channel_cc.cc
+  src/cpp/client/channel.cc
   src/cpp/client/client_context.cc
   src/cpp/client/create_channel.cc
   src/cpp/client/create_channel_internal.cc
   src/cpp/client/create_channel_posix.cc
-  src/cpp/client/credentials_cc.cc
+  src/cpp/client/credentials.cc
   src/cpp/client/generic_stub.cc
   src/cpp/common/channel_arguments.cc
   src/cpp/common/channel_filter.cc
-  src/cpp/common/completion_queue_cc.cc
+  src/cpp/common/completion_queue.cc
   src/cpp/common/core_codegen.cc
-  src/cpp/common/resource_quota_cc.cc
+  src/cpp/common/resource_quota.cc
   src/cpp/common/rpc_method.cc
   src/cpp/server/async_generic_service.cc
   src/cpp/server/create_default_thread_pool.cc
   src/cpp/server/dynamic_thread_pool.cc
   src/cpp/server/server_builder.cc
-  src/cpp/server/server_cc.cc
+  src/cpp/server/server.cc
   src/cpp/server/server_context.cc
   src/cpp/server/server_credentials.cc
   src/cpp/server/server_posix.cc
   src/cpp/thread_manager/thread_manager.cc
-  src/cpp/util/byte_buffer_cc.cc
-  src/cpp/util/slice_cc.cc
+  src/cpp/util/byte_buffer.cc
+  src/cpp/util/slice.cc
   src/cpp/util/status.cc
   src/cpp/util/string_ref.cc
-  src/cpp/util/time_cc.cc
+  src/cpp/util/time.cc
   src/cpp/codegen/codegen_init.cc
 )
 
@@ -1364,6 +1332,7 @@ if (gRPC_INSTALL)
   )
 endif()
 
+endif() # CONAN_ENABLE_MOBILE
   
 add_library(grpc++_reflection
   src/cpp/ext/proto_server_reflection.cc
@@ -1394,47 +1363,39 @@ foreach(_hdr
   )
 endforeach()
 
-  
-if (gRPC_INSTALL)
-  install(TARGETS grpc++_reflection EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
 
   
 add_library(grpc++_unsecure
   src/cpp/client/insecure_credentials.cc
   src/cpp/common/insecure_create_auth_context.cc
   src/cpp/server/insecure_server_credentials.cc
-  src/cpp/client/channel_cc.cc
+  src/cpp/client/channel.cc
   src/cpp/client/client_context.cc
   src/cpp/client/create_channel.cc
   src/cpp/client/create_channel_internal.cc
   src/cpp/client/create_channel_posix.cc
-  src/cpp/client/credentials_cc.cc
+  src/cpp/client/credentials.cc
   src/cpp/client/generic_stub.cc
   src/cpp/common/channel_arguments.cc
   src/cpp/common/channel_filter.cc
-  src/cpp/common/completion_queue_cc.cc
+  src/cpp/common/completion_queue.cc
   src/cpp/common/core_codegen.cc
-  src/cpp/common/resource_quota_cc.cc
+  src/cpp/common/resource_quota.cc
   src/cpp/common/rpc_method.cc
   src/cpp/server/async_generic_service.cc
   src/cpp/server/create_default_thread_pool.cc
   src/cpp/server/dynamic_thread_pool.cc
   src/cpp/server/server_builder.cc
-  src/cpp/server/server_cc.cc
+  src/cpp/server/server.cc
   src/cpp/server/server_context.cc
   src/cpp/server/server_credentials.cc
   src/cpp/server/server_posix.cc
   src/cpp/thread_manager/thread_manager.cc
-  src/cpp/util/byte_buffer_cc.cc
-  src/cpp/util/slice_cc.cc
+  src/cpp/util/byte_buffer.cc
+  src/cpp/util/slice.cc
   src/cpp/util/status.cc
   src/cpp/util/string_ref.cc
-  src/cpp/util/time_cc.cc
+  src/cpp/util/time.cc
   src/cpp/codegen/codegen_init.cc
 )
 
@@ -1545,21 +1506,11 @@ foreach(_hdr
 )
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
-  install(FILES ${_hdr}
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
-  )
+  # install(FILES ${_hdr}
+  #  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+  # ) #NOTE
 endforeach()
 
-  
-if (gRPC_INSTALL)
-  install(TARGETS grpc++_unsecure EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-  
 add_library(grpc_plugin_support
   src/compiler/cpp_generator.cc
   src/compiler/csharp_generator.cc
@@ -1588,9 +1539,9 @@ foreach(_hdr
 )
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
-  install(FILES ${_hdr}
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
-  )
+  # install(FILES ${_hdr}
+  #  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+  # ) #NOTE
 endforeach()
 
   
@@ -1602,7 +1553,7 @@ if (gRPC_INSTALL)
   )
 endif()
 
-  
+if(CONAN_ADDITIONAL_PLUGINS)
 add_library(grpc_csharp_ext
   src/csharp/ext/grpc_csharp_ext.c
 )
@@ -1630,9 +1581,10 @@ if (gRPC_INSTALL)
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endif()
+endif() # CONAN_ADDITIONAL_PLUGINS
 
-
-
+# NOTE: Do we need this?
+if(CONAN_ADDITIONAL_BINS)
 add_executable(gen_hpack_tables
   tools/codegen/core/gen_hpack_tables.c
 )
@@ -1650,15 +1602,6 @@ target_link_libraries(gen_hpack_tables
   gpr
   grpc
 )
-
-
-if (gRPC_INSTALL)
-  install(TARGETS gen_hpack_tables EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
 
 
 add_executable(gen_legal_metadata_characters
@@ -1792,7 +1735,7 @@ if (gRPC_INSTALL)
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endif()
-
+endif() # CONAN_ADDITIONAL_BINS
 
 add_executable(grpc_cpp_plugin
   src/compiler/cpp_plugin.cc
@@ -1812,190 +1755,7 @@ target_link_libraries(grpc_cpp_plugin
   grpc_plugin_support
 )
 
-
-if (gRPC_INSTALL)
-  install(TARGETS grpc_cpp_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-
-add_executable(grpc_csharp_plugin
-  src/compiler/csharp_plugin.cc
-)
-
-target_include_directories(grpc_csharp_plugin
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-  PRIVATE ${BORINGSSL_ROOT_DIR}/include
-  PRIVATE ${PROTOBUF_ROOT_DIR}/src
-  PRIVATE ${ZLIB_ROOT_DIR}
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party/zlib
-)
-
-target_link_libraries(grpc_csharp_plugin
-  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
-  grpc_plugin_support
-)
-
-
-if (gRPC_INSTALL)
-  install(TARGETS grpc_csharp_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-
-add_executable(grpc_node_plugin
-  src/compiler/node_plugin.cc
-)
-
-target_include_directories(grpc_node_plugin
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-  PRIVATE ${BORINGSSL_ROOT_DIR}/include
-  PRIVATE ${PROTOBUF_ROOT_DIR}/src
-  PRIVATE ${ZLIB_ROOT_DIR}
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party/zlib
-)
-
-target_link_libraries(grpc_node_plugin
-  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
-  grpc_plugin_support
-)
-
-
-if (gRPC_INSTALL)
-  install(TARGETS grpc_node_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-
-add_executable(grpc_objective_c_plugin
-  src/compiler/objective_c_plugin.cc
-)
-
-target_include_directories(grpc_objective_c_plugin
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-  PRIVATE ${BORINGSSL_ROOT_DIR}/include
-  PRIVATE ${PROTOBUF_ROOT_DIR}/src
-  PRIVATE ${ZLIB_ROOT_DIR}
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party/zlib
-)
-
-target_link_libraries(grpc_objective_c_plugin
-  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
-  grpc_plugin_support
-)
-
-
-if (gRPC_INSTALL)
-  install(TARGETS grpc_objective_c_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-
-add_executable(grpc_php_plugin
-  src/compiler/php_plugin.cc
-)
-
-target_include_directories(grpc_php_plugin
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-  PRIVATE ${BORINGSSL_ROOT_DIR}/include
-  PRIVATE ${PROTOBUF_ROOT_DIR}/src
-  PRIVATE ${ZLIB_ROOT_DIR}
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party/zlib
-)
-
-target_link_libraries(grpc_php_plugin
-  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
-  grpc_plugin_support
-)
-
-
-if (gRPC_INSTALL)
-  install(TARGETS grpc_php_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-
-add_executable(grpc_python_plugin
-  src/compiler/python_plugin.cc
-)
-
-target_include_directories(grpc_python_plugin
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-  PRIVATE ${BORINGSSL_ROOT_DIR}/include
-  PRIVATE ${PROTOBUF_ROOT_DIR}/src
-  PRIVATE ${ZLIB_ROOT_DIR}
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party/zlib
-)
-
-target_link_libraries(grpc_python_plugin
-  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
-  grpc_plugin_support
-)
-
-
-if (gRPC_INSTALL)
-  install(TARGETS grpc_python_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-
-add_executable(grpc_ruby_plugin
-  src/compiler/ruby_plugin.cc
-)
-
-target_include_directories(grpc_ruby_plugin
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-  PRIVATE ${BORINGSSL_ROOT_DIR}/include
-  PRIVATE ${PROTOBUF_ROOT_DIR}/src
-  PRIVATE ${ZLIB_ROOT_DIR}
-  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party/zlib
-)
-
-target_link_libraries(grpc_ruby_plugin
-  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
-  grpc_plugin_support
-)
-
-
-if (gRPC_INSTALL)
-  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif()
-
-
-
-
-
-
-
-
+# NOTE
 if (gRPC_INSTALL)
   install(EXPORT gRPCTargets
     DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
@@ -2004,9 +1764,10 @@ if (gRPC_INSTALL)
 endif()
 
 foreach(_config gRPCConfig gRPCConfigVersion)
-  configure_file(tools/cmake/${_config}.cmake.in
-    ${_config}.cmake @ONLY)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${_config}.cmake
-    DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
-  )
+ # configure_file(tools/cmake/${_config}.cmake.in
+  #  ${_config}.cmake @ONLY)
+    # NOTE
+  # install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${_config}.cmake
+  #  DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
+  # )
 endforeach()
