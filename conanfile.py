@@ -9,7 +9,7 @@ class gRPCConan(ConanFile):
     folder = "grpc-31606bdb34474d8728350ad45baf0e91b590b041"
     url = "https://github.com/inexor-game/conan-grpc.git"
     license = "BSD-3Clause"
-    requires = "zlib/1.2.8@lasote/stable", "OpenSSL/1.0.2i@lasote/stable", "Protobuf/3.1.0@a_teammate/testing"
+    requires = "zlib/1.2.8@lasote/stable", "OpenSSL/1.0.2i@lasote/stable", "Protobuf/3.1.0@a_teammate/stable"
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
@@ -27,15 +27,14 @@ class gRPCConan(ConanFile):
         tools.download("https://github.com/grpc/grpc/archive/31606bdb34474d8728350ad45baf0e91b590b041.zip", "grpc.zip")
         tools.unzip("grpc.zip")
         os.unlink("grpc.zip")
-        cmake_name = "%s/CMakeLists.txt" % self.folder
+        cmake_name = "{}/CMakeLists.txt".format(self.folder)
         
         # tell grpc to use our deps and flags
         tools.replace_in_file(cmake_name, "project(${PACKAGE_NAME} C CXX)", '''project(${PACKAGE_NAME} C CXX)
         include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
         conan_basic_setup()''')
         tools.replace_in_file(cmake_name, "\"module\" CACHE STRING ", '''\"package\" CACHE STRING ''') # tell grpc to use the find_package version
-        # never install manually, but let conan do it
-        tools.replace_in_file(cmake_name, "gRPC_INSTALL ON", "gRPC_INSTALL OFF")
+        # skip installing the headers, TODO: use these!
         tools.replace_in_file(cmake_name, '''  install(FILES ${_hdr}
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
   )''', '''  # install(FILES ${_hdr} # COMMENTED BY CONAN
@@ -63,22 +62,47 @@ class gRPCConan(ConanFile):
         add_executable(grpc_cpp_plugin''')
         tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
         add_executable(grpc_csharp_plugin''')
-        tools.replace_in_file(cmake_name, '''target_link_libraries(grpc_ruby_plugin
-  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
-  grpc_plugin_support
-)''', '''target_link_libraries(grpc_ruby_plugin
-  ${_gRPC_PROTOBUF_PROTOC_LIBRARIES}
-  grpc_plugin_support
-)
+        tools.replace_in_file(cmake_name, '''install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
+endif()''', '''install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
+endif()
 endif(CONAN_ADDITIONAL_PLUGINS)''')
 
     def build(self):
+        tmp_install_dir = "{}/install".format(os.getcwd())
+        os.mkdir(tmp_install_dir)
+        args = ["-DgRPC_INSTALL=ON", '-DCMAKE_INSTALL_PREFIX="{}"'.format(tmp_install_dir)] # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
+        if self.options.non_cpp_plugins:
+            args += ["-DCONAN_ADDITIONAL_PLUGINS=ON"]
+        if self.options.enable_mobile:
+            args += ["-DCONAN_ENABLE_MOBILE=ON"]
         cmake = CMake(self.settings)
-        self.run('cmake %s/%s %s' % (self.conanfile_directory, self.folder, cmake.command_line))
-        self.run("cmake --build . %s" % cmake.build_config)
+        self.run('cmake {0}/{1} {2} {3}'.format(self.conanfile_directory, self.folder, cmake.command_line, ' '.join(args)))
+        self.run("cmake --build . --target install {}".format(cmake.build_config))
+
+
+        # Patch the generated findGRPC .cmake files:
+        cmake_find_folder = "{}/lib/cmake/gRPC".format(tmp_install_dir)
+        cmake_find_file = "{}/gRPCTargets.cmake".format(cmake_find_folder)
+        tools.replace_in_file(cmake_find_file, 'get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)', '''get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+        set(_IMPORT_PREFIX ${CONAN_GRPC_ROOT}) # NOTE: ADDED by conan''')
 
     def package(self):
-        self.copy('*', dst='include', src='include')
+        cmake_folder = "{}/install/lib/cmake/gRPC".format(os.getcwd()) # Is there a better way maybe to obtain the build dir?
+        cmake_files = ["gRPCConfig.cmake", "gRPCConfigVersion.cmake", "gRPCTargets.cmake"]
+        for file in cmake_files:
+            self.copy(file, dst='.', src=cmake_folder)
+          # Copy the build_type specific file only for our used one:
+        self.copy("gRPCTargets-{}.cmake".format("debug" if self.settings.build_type == "Debug" else "release"), dst=".", src=cmake_folder)
+
+        self.copy('*', dst='include', src='{}/include'.format(self.folder))
         self.copy("*.lib", dst="lib", src="", keep_path=False)
         self.copy("*.a", dst="lib", src="", keep_path=False)
         self.copy("*", dst="bin", src="bin")
