@@ -7,7 +7,7 @@ class gRPCConan(ConanFile):
     name = "gRPC"
     version = "1.1.0-dev" # Nov 8
     folder = "grpc-31606bdb34474d8728350ad45baf0e91b590b041"
-    url = "https://github.com/inexor-game/conan-grpc.git"
+    url = "https://github.com/a_teammate/conan-grpc.git"
     license = "BSD-3Clause"
     requires = "zlib/1.2.8@lasote/stable", "OpenSSL/1.0.2i@lasote/stable", "Protobuf/3.1.0@a_teammate/stable"
     settings = "os", "compiler", "build_type", "arch"
