@@ -6,7 +6,7 @@ environment:
 
     CONAN_UPLOAD: 1
     CONAN_REFERENCE: "gRPC/1.1.0-dev"
-    CONAN_USERNAME: "a_teammate"
+    CONAN_USERNAME: "inexorgame"
     CONAN_CHANNEL: "stable"
     CONAN_TOTAL_PAGES: 16
 

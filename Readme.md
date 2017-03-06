@@ -1,4 +1,7 @@
 Conan package for GRPC
+
+the Google provided RPC framework.
+
 --------------------------------------------
 
-Package here: https://www.conan.io/source/gRPC/1.0.0/a_teammate/testing
+Package here: https://www.conan.io/ (search for gRPC)
