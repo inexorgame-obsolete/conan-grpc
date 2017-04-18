@@ -90,13 +90,13 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
 
 
         # Patch the generated findGRPC .cmake files:
-        cmake_find_folder = "{}/lib/cmake/gRPC".format(tmp_install_dir)
+        cmake_find_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
         cmake_find_file = "{}/gRPCTargets.cmake".format(cmake_find_folder)
         tools.replace_in_file(cmake_find_file, 'get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)', '''get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
         set(_IMPORT_PREFIX ${CONAN_GRPC_ROOT}) # NOTE: ADDED by conan''')
 
     def package(self):
-        cmake_folder = "{}/install/lib/cmake/gRPC".format(os.getcwd()) # Is there a better way maybe to obtain the build dir?
+        cmake_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
         cmake_files = ["gRPCConfig.cmake", "gRPCConfigVersion.cmake", "gRPCTargets.cmake"]
         for file in cmake_files:
             self.copy(file, dst='.', src=cmake_folder)
@@ -114,3 +114,11 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
         self.cpp_info.libs = ["gpr", "grpc", "grpc++", "grpc_unsecure", "grpc++_unsecure"]
         if self.settings.compiler == "Visual Studio":
             self.cpp_info.libs += ["wsock32", "ws2_32"]
+
+    def get_install_lib_path(self):
+        install_path = "{}/install".format(os.getcwd())
+        if os.path.isfile("{}/lib/cmake/gRPC/gRPCTargets.cmake".format(install_path)):
+            return "{}/lib".format(install_path)
+        elif os.path.isfile("{}/lib64/cmake/gRPC/gRPCTargets.cmake".format(install_path)):
+            return "{}/lib64".format(install_path)
+        # its "{}/install/{{lib|lib64}}/cmake/gRPC/gRPCTargets.cmake".format(os.getcwd())
