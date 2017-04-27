@@ -10,7 +10,7 @@ class gRPCConan(ConanFile):
     description = "Googles RPC framework in use by the Inexor game."
     url = "https://github.com/inexor-game/conan-grpc.git"
     license = "BSD-3Clause"
-    requires = "zlib/1.2.8@lasote/stable", "OpenSSL/1.0.2j@lasote/stable", "Protobuf/3.1.0@inexorgame/stable"
+    requires = "zlib/1.2.11@lasote/stable", "OpenSSL/1.0.2k@lasote/stable", "Protobuf/3.1.0@inexorgame/stable"
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
@@ -29,7 +29,7 @@ class gRPCConan(ConanFile):
         tools.unzip("grpc.zip")
         os.unlink("grpc.zip")
         cmake_name = "{}/CMakeLists.txt".format(self.folder)
-        
+
         # tell grpc to use our deps and flags
         tools.replace_in_file(cmake_name, "project(${PACKAGE_NAME} C CXX)", '''project(${PACKAGE_NAME} C CXX)
         include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -41,7 +41,7 @@ class gRPCConan(ConanFile):
   )''', '''  # install(FILES ${_hdr} # COMMENTED BY CONAN
     # DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
   # )''')
-        
+
         # Add some CMake Variables (effectively commenting out stuff we do not support)
         tools.replace_in_file(cmake_name, "add_library(grpc_cronet", '''if(CONAN_ENABLE_MOBILE)
         add_library(grpc_cronet''')
