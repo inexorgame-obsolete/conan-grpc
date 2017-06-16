@@ -111,7 +111,7 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
         self.copy("*.so", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ["gpr", "grpc", "grpc++", "grpc_unsecure", "grpc++_unsecure"]
+        self.cpp_info.libs = ["grpc", "grpc++", "grpc_unsecure", "grpc++_unsecure", "gpr"]
         if self.settings.compiler == "Visual Studio":
             self.cpp_info.libs += ["wsock32", "ws2_32"]
 
