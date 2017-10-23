@@ -5,26 +5,26 @@ environment:
     PYTHON_ARCH: "32"
 
     CONAN_UPLOAD: 1
-    CONAN_REFERENCE: "gRPC/1.1.0-dev"
+    CONAN_REFERENCE: "gRPC/1.1.0"
     CONAN_USERNAME: "inexorgame"
     CONAN_CHANNEL: "stable"
     CONAN_TOTAL_PAGES: 16
 
     matrix:
         - CONAN_CURRENT_PAGE: 1
-        - CONAN_CURRENT_PAGE: 2  
+        - CONAN_CURRENT_PAGE: 2
         - CONAN_CURRENT_PAGE: 3
         - CONAN_CURRENT_PAGE: 4
         - CONAN_CURRENT_PAGE: 5
-        - CONAN_CURRENT_PAGE: 6  
+        - CONAN_CURRENT_PAGE: 6
         - CONAN_CURRENT_PAGE: 7
         - CONAN_CURRENT_PAGE: 8
         - CONAN_CURRENT_PAGE: 9
-        - CONAN_CURRENT_PAGE: 10 
+        - CONAN_CURRENT_PAGE: 10
         - CONAN_CURRENT_PAGE: 11
         - CONAN_CURRENT_PAGE: 12
         - CONAN_CURRENT_PAGE: 13
-        - CONAN_CURRENT_PAGE: 14  
+        - CONAN_CURRENT_PAGE: 14
         - CONAN_CURRENT_PAGE: 15
         - CONAN_CURRENT_PAGE: 16
 

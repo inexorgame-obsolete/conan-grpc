@@ -1,16 +1,14 @@
 from conans import ConanFile, CMake, tools
 import os
-import shutil
-
 
 class gRPCConan(ConanFile):
     name = "gRPC"
-    version = "1.1.0-dev" # Nov 8
-    folder = "grpc-31606bdb34474d8728350ad45baf0e91b590b041"
+    version = "1.1.0"
+    folder = "grpc-%s" % version
     description = "Googles RPC framework in use by the Inexor game."
-    url = "https://github.com/inexor-game/conan-grpc.git"
-    license = "BSD-3Clause"
-    requires = "zlib/1.2.11@lasote/stable", "OpenSSL/1.0.2k@lasote/stable", "Protobuf/3.1.0@inexorgame/stable"
+    url = "https://github.com/inexorgame/conan-grpc.git"
+    license = "BSD-3Clause" # for > 1.6.7 : https://github.com/grpc/grpc/commit/312ea4a1874acebc056f142fc65ac434165de0a4#diff-9879d6db96fd29134fc802214163b95a
+    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2l@conan/stable", "Protobuf/3.1.0@inexorgame/stable"
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
@@ -25,7 +23,7 @@ class gRPCConan(ConanFile):
     short_paths = True # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
 
     def source(self):
-        tools.download("https://github.com/grpc/grpc/archive/31606bdb34474d8728350ad45baf0e91b590b041.zip", "grpc.zip")
+        tools.download("https://github.com/grpc/grpc/archive/v{}.zip".format(self.version), "grpc.zip")
         tools.unzip("grpc.zip")
         os.unlink("grpc.zip")
         cmake_name = "{}/CMakeLists.txt".format(self.folder)
@@ -54,15 +52,17 @@ class gRPCConan(ConanFile):
         add_library(grpc++_reflection''')
         tools.replace_in_file(cmake_name, "add_library(grpc++_unsecure", '''endif(CONAN_ENABLE_REFLECTION_LIBS)
         add_library(grpc++_unsecure''')
-        tools.replace_in_file(cmake_name, "add_library(grpc_csharp_ext", '''if(CONAN_ADDITIONAL_PLUGINS)
-        add_library(grpc_csharp_ext''')
-        tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''endif(CONAN_ADDITIONAL_PLUGINS)
+        # tools.replace_in_file(cmake_name, "add_library(grpc_csharp_ext", '''if(CONAN_ADDITIONAL_PLUGINS)
+        # add_library(grpc_csharp_ext''') # not available anymore in v1.1.0
+        # tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''endif(CONAN_ADDITIONAL_PLUGINS)
+        tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''
         if(CONAN_ADDITIONAL_BINS)
         add_executable(gen_hpack_tables''')
         tools.replace_in_file(cmake_name, "add_executable(grpc_cpp_plugin", '''endif(CONAN_ADDITIONAL_BINS)
         add_executable(grpc_cpp_plugin''')
         tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
         add_executable(grpc_csharp_plugin''')
+        # gRPC > 1.6 changes the CMAKE_INSTALL_BINDIR vars to gRPC_INSTALL_BINDIR !!
         tools.replace_in_file(cmake_name, '''install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

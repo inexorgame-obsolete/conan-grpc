@@ -1,7 +1,7 @@
-Conan package for GRPC
+# Conan package for GRPC
 
-the Google provided RPC framework.
+The Google provided RPC framework.
 
 --------------------------------------------
 
-Package here: https://www.conan.io/ (search for gRPC)
+Package can be found here: https://bintray.com/inexorgame/inexor-conan/gRPC%3Ainexorgame
