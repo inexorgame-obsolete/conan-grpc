@@ -8,7 +8,7 @@ class gRPCConan(ConanFile):
     description = "Googles RPC framework in use by the Inexor game."
     url = "https://github.com/inexorgame/conan-grpc.git"
     license = "BSD-3Clause" # for > 1.6.7 : https://github.com/grpc/grpc/commit/312ea4a1874acebc056f142fc65ac434165de0a4#diff-9879d6db96fd29134fc802214163b95a
-    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2l@conan/stable", "Protobuf/3.1.0@inexorgame/stable"
+    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2m@conan/stable", "Protobuf/3.1.0@inexorgame/stable"
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
