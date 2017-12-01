@@ -2,6 +2,7 @@
 
 The Google provided RPC framework.
 
---------------------------------------------
 
-Package can be found here: https://bintray.com/inexorgame/inexor-conan/gRPC%3Ainexorgame
+  * package: https://bintray.com/inexorgame/inexor-conan/gRPC%3Ainexorgame
+  * source code: https://github.com/inexorgame/conan-grpc
+  * issues tracker: https://github.com/inexorgame/inexor-core/issues
