@@ -84,7 +84,7 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
             args += ["-DCONAN_ADDITIONAL_PLUGINS=ON"]
         if self.options.enable_mobile:
             args += ["-DCONAN_ENABLE_MOBILE=ON"]
-        cmake = CMake(self.settings)
+        cmake = CMake(self)
         self.run('cmake {0}/{1} {2} {3}'.format(self.conanfile_directory, self.folder, cmake.command_line, ' '.join(args)))
         self.run("cmake --build . --target install {}".format(cmake.build_config))
 
