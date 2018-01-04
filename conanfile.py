@@ -3,12 +3,12 @@ import os
 
 class gRPCConan(ConanFile):
     name = "gRPC"
-    version = "1.1.0"
+    version = "1.8.3"
     folder = "grpc-%s" % version
     description = "Googles RPC framework in use by the Inexor game."
     url = "https://github.com/inexorgame/conan-grpc.git"
-    license = "BSD-3Clause" # for > 1.6.7 : https://github.com/grpc/grpc/commit/312ea4a1874acebc056f142fc65ac434165de0a4#diff-9879d6db96fd29134fc802214163b95a
-    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2m@conan/stable", "Protobuf/3.1.0@inexorgame/stable"
+    license = "Apache-2.0"
+    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2m@conan/stable", "Protobuf/3.5.1@inexorgame/stable"
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
@@ -64,14 +64,14 @@ class gRPCConan(ConanFile):
         add_executable(grpc_csharp_plugin''')
         # gRPC > 1.6 changes the CMAKE_INSTALL_BINDIR vars to gRPC_INSTALL_BINDIR !!
         tools.replace_in_file(cmake_name, '''install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${gRPC_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${gRPC_INSTALL_BINDIR}
   )
 endif()''', '''install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${gRPC_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${gRPC_INSTALL_BINDIR}
   )
 endif()
 endif(CONAN_ADDITIONAL_PLUGINS)''')
