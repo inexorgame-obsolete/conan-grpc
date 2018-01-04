@@ -34,10 +34,11 @@ class gRPCConan(ConanFile):
         conan_basic_setup()''')
         tools.replace_in_file(cmake_name, "\"module\" CACHE STRING ", '''\"package\" CACHE STRING ''') # tell grpc to use the find_package version
         # skip installing the headers, TODO: use these!
+        # gRPC > 1.6 changes the CMAKE_INSTALL_INCLUDEDIR vars to gRPC_INSTALL_INCLUDEDIR !!
         tools.replace_in_file(cmake_name, '''  install(FILES ${_hdr}
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+    DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )''', '''  # install(FILES ${_hdr} # COMMENTED BY CONAN
-    # DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_path}"
+    # DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   # )''')
 
         # Add some CMake Variables (effectively commenting out stuff we do not support)
