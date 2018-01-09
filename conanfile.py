@@ -117,9 +117,9 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
             self.cpp_info.libs += ["wsock32", "ws2_32"]
 
     def get_install_lib_path(self):
-        install_path = "{}/install".format(os.getcwd())
+        install_path = "{}/install".format(self.build_folder)
         if os.path.isfile("{}/lib/cmake/gRPC/gRPCTargets.cmake".format(install_path)):
             return "{}/lib".format(install_path)
         elif os.path.isfile("{}/lib64/cmake/gRPC/gRPCTargets.cmake".format(install_path)):
             return "{}/lib64".format(install_path)
-        # its "{}/install/{{lib|lib64}}/cmake/gRPC/gRPCTargets.cmake".format(os.getcwd())
+        # its "{}/install/{{lib|lib64}}/cmake/gRPC/gRPCTargets.cmake".format(self.build_folder)
