@@ -100,10 +100,10 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
         self.run("cmake --build . --target install {}".format(cmake.build_config))
 
         # Patch the generated findGRPC .cmake files:
-        cmake_find_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
-        cmake_find_file = "{}/gRPCTargets.cmake".format(cmake_find_folder)
-        tools.replace_in_file(cmake_find_file, 'get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)', '''get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-        set(_IMPORT_PREFIX ${CONAN_GRPC_ROOT}) # NOTE: ADDED by conan''')
+        # cmake_find_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
+        # cmake_find_file = "{}/gRPCTargets.cmake".format(cmake_find_folder)
+        # tools.replace_in_file(cmake_find_file, 'get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)', '''get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+        # set(_IMPORT_PREFIX ${CONAN_GRPC_ROOT}) # NOTE: ADDED by conan''')
 
     def package(self):
         cmake_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
