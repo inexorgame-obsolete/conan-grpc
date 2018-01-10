@@ -1,6 +1,7 @@
 from conans import ConanFile, CMake, tools
 import os
 
+
 class gRPCConan(ConanFile):
     name = "gRPC"
     version = "1.8.3"
@@ -12,22 +13,31 @@ class gRPCConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
-            "enable_mobile": [True, False], # Enables iOS and Android support
-            "non_cpp_plugins":[True, False] # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
+            "enable_mobile": [True, False],  # Enables iOS and Android support
+            "non_cpp_plugins":[True, False]  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
             }
     default_options = '''shared=False
     enable_mobile=False
     non_cpp_plugins=False
     '''
     generators = "cmake"
-    short_paths = True # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
+    short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
 
     def source(self):
-        tools.download("https://github.com/grpc/grpc/archive/v{}.zip".format(self.version), "grpc.zip")
-        tools.unzip("grpc.zip")
-        os.unlink("grpc.zip")
+        #tools.download("https://github.com/grpc/grpc/archive/v{}.zip".format(self.version), "grpc.zip")
+        #tools.unzip("grpc.zip")
+        #os.unlink("grpc.zip")
+        self.run("git clone -b v{} --single-branch --recursive --depth 1 https://github.com/grpc/grpc.git grpc-{}".format(self.version, self.version))
+        # --shallow-submodules doesn't work, unadvertised objects, would bring down the download/file size dramatically
+        # self.run("git submodule update --init");
         cmake_name = "{}/CMakeLists.txt".format(self.folder)
 
+        # we want to have -DgRPC_INSTALL=ON AND -DgRPC_CARES_PROVIDER="module" otherwhise we would need a C-Ares Conan package
+        # FIXME: THIS WILL BREAK AGAIN WITH >= 1.9.0!! (which is in dev right now, so we have no strategy for the future right now)
+        tools.replace_in_file(cmake_name, '''  if(gRPC_INSTALL)
+    message(WARNING "gRPC_INSTALL will be forced to FALSE because gRPC_CARES_PROVIDER is \\\"module\\\"")
+    set(gRPC_INSTALL FALSE)
+  endif()''', '''  # CONAN: Use C-ARES from the submodule''')
         # tell grpc to use our deps and flags
         tools.replace_in_file(cmake_name, "project(${PACKAGE_NAME} C CXX)", '''project(${PACKAGE_NAME} C CXX)
         include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -66,8 +76,8 @@ class gRPCConan(ConanFile):
         # gRPC > 1.6 changes the CMAKE_INSTALL_BINDIR vars to gRPC_INSTALL_BINDIR !!
         tools.replace_in_file(cmake_name, '''install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${gRPC_INSTALL_BINDIR}
-    ARCHIVE DESTINATION ${gRPC_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
   )
 endif()''', '''install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
@@ -80,7 +90,7 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
     def build(self):
         tmp_install_dir = "{}/install".format(self.build_folder)
         os.mkdir(tmp_install_dir)
-        args = ["-DgRPC_INSTALL=ON", '-DCMAKE_INSTALL_PREFIX="{}"'.format(tmp_install_dir)] # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
+        args = ["-DgRPC_INSTALL=ON", '-DgRPC_CARES_PROVIDER="module"', '-DCMAKE_INSTALL_PREFIX="{}"'.format(tmp_install_dir)] # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
         if self.options.non_cpp_plugins:
             args += ["-DCONAN_ADDITIONAL_PLUGINS=ON"]
         if self.options.enable_mobile:
@@ -88,7 +98,6 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
         cmake = CMake(self)
         self.run('cmake {0}/{1} {2} {3}'.format(self.source_folder, self.folder, cmake.command_line, ' '.join(args)))
         self.run("cmake --build . --target install {}".format(cmake.build_config))
-
 
         # Patch the generated findGRPC .cmake files:
         cmake_find_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
@@ -101,7 +110,7 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
         cmake_files = ["gRPCConfig.cmake", "gRPCConfigVersion.cmake", "gRPCTargets.cmake"]
         for file in cmake_files:
             self.copy(file, dst='.', src=cmake_folder)
-          # Copy the build_type specific file only for our used one:
+        # Copy the build_type specific file only for our used one:
         self.copy("gRPCTargets-{}.cmake".format("debug" if self.settings.build_type == "Debug" else "release"), dst=".", src=cmake_folder)
 
         self.copy('*', dst='include', src='{}/include'.format(self.folder))
