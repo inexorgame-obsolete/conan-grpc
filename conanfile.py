@@ -106,12 +106,21 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
         # set(_IMPORT_PREFIX ${CONAN_GRPC_ROOT}) # NOTE: ADDED by conan''')
 
     def package(self):
+        # gRPC CMake files
         cmake_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
         cmake_files = ["gRPCConfig.cmake", "gRPCConfigVersion.cmake", "gRPCTargets.cmake"]
         for file in cmake_files:
             self.copy(file, dst='.', src=cmake_folder)
         # Copy the build_type specific file only for our used one:
         self.copy("gRPCTargets-{}.cmake".format("debug" if self.settings.build_type == "Debug" else "release"), dst=".", src=cmake_folder)
+
+        # c-ares CMake files
+        cmake_folder = "{}/cmake/c-ares".format(self.get_install_lib_path())
+        cmake_files = ["c-ares-config"]
+        for file in cmake_files:
+            self.copy(file, dst='.', src=cmake_folder)
+        # Copy the build_type specific file only for our used one:
+        self.copy("c-ares-targets{}.cmake".format("" if self.settings.build_type == "Debug" else "-release"), dst=".", src=cmake_folder)
 
         self.copy('*', dst='include', src='{}/include'.format(self.folder))
         self.copy("*.lib", dst="lib", src="", keep_path=False)
