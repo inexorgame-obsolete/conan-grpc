@@ -9,7 +9,7 @@ class gRPCConan(ConanFile):
     description = "Googles RPC framework in use by the Inexor game."
     url = "https://github.com/inexorgame/conan-grpc.git"
     license = "Apache-2.0"
-    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2m@conan/stable", "Protobuf/3.5.1@inexorgame/stable", "gflags/2.2.1@bincrafters/stable"
+    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.1.0g@conan/stable", "Protobuf/3.5.1@inexorgame/stable", "gflags/2.2.1@bincrafters/stable"
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
