@@ -1,3 +1,8 @@
+# Conan
+conanbuildinfo.cmake
+conanbuildinfo.txt
+conaninfo.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
