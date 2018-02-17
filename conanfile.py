@@ -4,12 +4,12 @@ import os
 
 class gRPCConan(ConanFile):
     name = "gRPC"
-    version = "1.8.3"
+    version = "1.9.0"
     folder = "grpc-%s" % version
-    description = "Googles RPC framework in use by the Inexor game."
+    description = "Google's RPC library and framework."
     url = "https://github.com/inexorgame/conan-grpc.git"
     license = "Apache-2.0"
-    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.1.0g@conan/stable", "Protobuf/3.5.1@inexorgame/stable", "gflags/2.2.1@bincrafters/stable"
+    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.1.0g@conan/stable", "Protobuf/3.5.1@inexorgame/stable", "gflags/2.2.1@bincrafters/stable", "c-ares/1.13.0@inexorgame/testing"
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
@@ -32,12 +32,6 @@ class gRPCConan(ConanFile):
         # self.run("git submodule update --init");
         cmake_name = "{}/CMakeLists.txt".format(self.folder)
 
-        # we want to have -DgRPC_INSTALL=ON AND -DgRPC_CARES_PROVIDER="module" otherwhise we would need a C-Ares Conan package
-        # FIXME: THIS WILL BREAK AGAIN WITH >= 1.9.0!! (which is in dev right now, so we have no strategy for the future right now)
-        tools.replace_in_file(cmake_name, '''  if(gRPC_INSTALL)
-    message(WARNING "gRPC_INSTALL will be forced to FALSE because gRPC_CARES_PROVIDER is \\\"module\\\"")
-    set(gRPC_INSTALL FALSE)
-  endif()''', '''  # CONAN: Use C-ARES from the submodule''')
         # tell grpc to use our deps and flags
         tools.replace_in_file(cmake_name, "project(${PACKAGE_NAME} C CXX)", '''project(${PACKAGE_NAME} C CXX)
         include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -90,7 +84,7 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
     def build(self):
         tmp_install_dir = "{}/install".format(self.build_folder)
         os.mkdir(tmp_install_dir)
-        args = ["-DgRPC_INSTALL=ON", '-DgRPC_CARES_PROVIDER="module"', '-DCMAKE_INSTALL_PREFIX="{}"'.format(tmp_install_dir)] # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
+        args = ["-DgRPC_INSTALL=ON", '-DCMAKE_INSTALL_PREFIX="{}"'.format(tmp_install_dir)] # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
         if self.options.non_cpp_plugins:
             args += ["-DCONAN_ADDITIONAL_PLUGINS=ON"]
         if self.options.enable_mobile:
