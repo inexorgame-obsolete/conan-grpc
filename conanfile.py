@@ -34,10 +34,7 @@ class gRPCConan(ConanFile):
 
         # we want to have -DgRPC_INSTALL=ON AND -DgRPC_CARES_PROVIDER="module" otherwhise we would need a C-Ares Conan package
         # FIXME: THIS WILL BREAK AGAIN WITH >= 1.9.0!! (which is in dev right now, so we have no strategy for the future right now)
-        tools.replace_in_file(cmake_name, '''  if(gRPC_INSTALL)
-    message(WARNING "gRPC_INSTALL will be forced to FALSE because gRPC_CARES_PROVIDER is \\\"module\\\"")
-    set(gRPC_INSTALL FALSE)
-  endif()''', '''  # CONAN: Use C-ARES from the submodule''')
+        tools.replace_in_file(cmake_name, '''  if(gRPC_INSTALL){0!s}    message(WARNING "gRPC_INSTALL will be forced to FALSE because gRPC_CARES_PROVIDER is \\\"module\\\""){0!s}    set(gRPC_INSTALL FALSE){0!s}  endif()'''.format(os.linesep), '''  # CONAN: Use C-ARES from the submodule''')
         # tell grpc to use our deps and flags
         tools.replace_in_file(cmake_name, "project(${PACKAGE_NAME} C CXX)", '''project(${PACKAGE_NAME} C CXX)
         include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -45,11 +42,7 @@ class gRPCConan(ConanFile):
         tools.replace_in_file(cmake_name, "\"module\" CACHE STRING ", '''\"package\" CACHE STRING ''') # tell grpc to use the find_package version
         # skip installing the headers, TODO: use these!
         # gRPC > 1.6 changes the CMAKE_INSTALL_INCLUDEDIR vars to gRPC_INSTALL_INCLUDEDIR !!
-        tools.replace_in_file(cmake_name, '''  install(FILES ${_hdr}
-    DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
-  )''', '''  # install(FILES ${_hdr} # COMMENTED BY CONAN
-    # DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
-  # )''')
+        tools.replace_in_file(cmake_name, '''  install(FILES ${{_hdr}}{0!s}    DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  ){0!s}'''.format(os.linesep), '''  # install(FILES ${{_hdr}}{0!s}    # DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  # ){0!s}'''.format(os.linesep))
 
         # Add some CMake Variables (effectively commenting out stuff we do not support)
         tools.replace_in_file(cmake_name, "add_library(grpc_cronet", '''if(CONAN_ENABLE_MOBILE)
@@ -74,18 +67,7 @@ class gRPCConan(ConanFile):
         tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
         add_executable(grpc_csharp_plugin''')
         # gRPC > 1.6 changes the CMAKE_INSTALL_BINDIR vars to gRPC_INSTALL_BINDIR !!
-        tools.replace_in_file(cmake_name, '''install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
-  )
-endif()''', '''install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
-    RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${gRPC_INSTALL_BINDIR}
-    ARCHIVE DESTINATION ${gRPC_INSTALL_BINDIR}
-  )
-endif()
-endif(CONAN_ADDITIONAL_PLUGINS)''')
+        tools.replace_in_file(cmake_name, '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif()'''.format(os.linesep), '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif(){0!s}endif(CONAN_ADDITIONAL_PLUGINS)'''.format(os.linesep))
 
     def build(self):
         tmp_install_dir = "{}/install".format(self.build_folder)
@@ -121,7 +103,7 @@ endif(CONAN_ADDITIONAL_PLUGINS)''')
         self.copy("*.so", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ["grpc", "grpc++", "grpc_unsecure", "grpc++_unsecure", "gpr"]
+        self.cpp_info.libs = ["grpc", "grpc++", "grpc_unsecure", "grpc++_unsecure", "gpr", "cares"]
         if self.settings.compiler == "Visual Studio":
             self.cpp_info.libs += ["wsock32", "ws2_32"]
 
