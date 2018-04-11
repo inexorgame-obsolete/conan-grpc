@@ -24,12 +24,8 @@ class gRPCConan(ConanFile):
     short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
 
     def source(self):
-        #tools.download("https://github.com/grpc/grpc/archive/v{}.zip".format(self.version), "grpc.zip")
-        #tools.unzip("grpc.zip")
-        #os.unlink("grpc.zip")
-        self.run("git clone -b v{} --single-branch --recursive --depth 1 https://github.com/grpc/grpc.git grpc-{}".format(self.version, self.version))
-        # --shallow-submodules doesn't work, unadvertised objects, would bring down the download/file size dramatically
-        # self.run("git submodule update --init");
+        tools.get("https://github.com/grpc/grpc/archive/v{}.zip".format(self.version))
+
         cmake_name = "{}/CMakeLists.txt".format(self.folder)
 
         # tell grpc to use our deps and flags
