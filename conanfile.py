@@ -14,7 +14,7 @@ class gRPCConan(ConanFile):
     options = {
             "shared": [True, False],
             "enable_mobile": [True, False],  # Enables iOS and Android support
-            "non_cpp_plugins":[True, False]  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
+            "non_cpp_plugins": [True, False]  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
             }
     default_options = '''shared=False
     enable_mobile=False
@@ -55,8 +55,8 @@ class gRPCConan(ConanFile):
         tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''
         if(CONAN_ADDITIONAL_BINS)
         add_executable(gen_hpack_tables''')
-        tools.replace_in_file(cmake_name, "add_executable(grpc_cpp_plugin", '''endif(CONAN_ADDITIONAL_BINS)
-        add_executable(grpc_cpp_plugin''')
+        tools.replace_in_file(cmake_name, "add_executable(gen_legal_metadata_characters", '''endif(CONAN_ADDITIONAL_BINS)
+        add_executable(gen_legal_metadata_characters''')
         tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
         add_executable(grpc_csharp_plugin''')
         # gRPC > 1.6 changes the CMAKE_INSTALL_BINDIR vars to gRPC_INSTALL_BINDIR !!
