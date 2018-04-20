@@ -4,10 +4,10 @@ import os
 
 class gRPCConan(ConanFile):
     name = "gRPC"
-    version = "1.9.1"
+    version = "1.10.0"
     folder = "grpc-%s" % version
     description = "Google's RPC library and framework."
-    url = "https://github.com/inexorgame/conan-grpc.git"
+    url = "https://github.com/inexorgame/conan-grpc"
     license = "Apache-2.0"
     requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2o@conan/stable", "protobuf/3.5.1@bincrafters/stable", "gflags/2.2.1@bincrafters/stable", "c-ares/1.14.0@inexorgame/stable", "benchmark/1.3.0@inexorgame/stable"
     settings = "os", "compiler", "build_type", "arch"
