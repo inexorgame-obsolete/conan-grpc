@@ -71,6 +71,11 @@ class grpcConan(ConanFile):
 
         if self.options.non_cpp_plugins:
             cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "ON"
+            # cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON"  # This will be available post-1.13.0
+        else:
+            cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "OFF"
+            # cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "OFF"
+
         if self.options.enable_mobile:
             cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON"
 
