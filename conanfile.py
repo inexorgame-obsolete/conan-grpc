@@ -65,7 +65,7 @@ class grpcConan(ConanFile):
 
     def build(self):
         tmp_install_dir = "{}/install".format(self.build_folder)
-        os.mkdir(tmp_install_dir)
+        os.makedirs(tmp_install_dir, exist_ok=True)
         args = ["-DgRPC_INSTALL=ON", '-DCMAKE_INSTALL_PREFIX="{}"'.format(tmp_install_dir)] # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
         if self.options.non_cpp_plugins:
             args += ["-DCONAN_ADDITIONAL_PLUGINS=ON"]
