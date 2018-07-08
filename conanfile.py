@@ -2,8 +2,8 @@ from conans import ConanFile, CMake, tools
 import os
 
 
-class gRPCConan(ConanFile):
-    name = "gRPC"
+class grpcConan(ConanFile):
+    name = "grpc"
     version = "1.13.0"
     folder = "grpc-%s" % version
     description = "Google's RPC library and framework."

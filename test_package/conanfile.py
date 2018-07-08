@@ -3,10 +3,10 @@ import os
 
 channel = os.getenv("CONAN_CHANNEL", "stable")
 username = os.getenv("CONAN_USERNAME", "inexorgame")
-package_ref = os.getenv("CONAN_REFERENCE", "gRPC/1.8.3")
+package_ref = os.getenv("CONAN_REFERENCE", "grpc/1.13.0")
 
 
-class gRPCTestConan(ConanFile):
+class grpcTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     requires = "{}@{}/{}".format(package_ref, username, channel)
     generators = "cmake"
