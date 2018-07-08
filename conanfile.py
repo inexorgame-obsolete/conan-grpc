@@ -32,9 +32,8 @@ class grpcConan(ConanFile):
         tools.replace_in_file(cmake_name, "project(${PACKAGE_NAME} C CXX)", '''project(${PACKAGE_NAME} C CXX)
         include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
         conan_basic_setup()''')
-        tools.replace_in_file(cmake_name, "\"module\" CACHE STRING ", '''\"package\" CACHE STRING ''') # tell grpc to use the find_package version
-        # skip installing the headers, TODO: use these!
 
+        # skip installing the headers, TODO: use these!
         tools.replace_in_file(cmake_name, '''  install(FILES ${{_hdr}}{0!s}    DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  ){0!s}'''.format('\n'), '''  # install(FILES ${{_hdr}}{0!s}    # DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  # ){0!s}'''.format('\n'))
 
         # Add some CMake Variables (effectively commenting out stuff we do not support)
@@ -81,6 +80,14 @@ class grpcConan(ConanFile):
 
         cmake.definitions['gRPC_INSTALL'] = "ON"
         cmake.definitions['CMAKE_INSTALL_PREFIX'] = tmp_install_dir  # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
+
+        # tell grpc to use the find_package versions
+        cmake.definitions['gRPC_CARES_PROVIDER'] = "package"
+        cmake.definitions['gRPC_ZLIB_PROVIDER'] = "package"
+        cmake.definitions['gRPC_SSL_PROVIDER'] = "package"
+        cmake.definitions['gRPC_PROTOBUF_PROVIDER'] = "package"
+        cmake.definitions['gRPC_GFLAGS_PROVIDER'] = "package"
+        cmake.definitions['gRPC_BENCHMARK_PROVIDER'] = "package"
 
         cmake.configure(source_folder='{0}/{1}'.format(self.source_folder, self.folder))
         cmake.build()
