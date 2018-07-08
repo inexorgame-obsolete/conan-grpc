@@ -66,14 +66,20 @@ class grpcConan(ConanFile):
     def build(self):
         tmp_install_dir = "{}/install".format(self.build_folder)
         os.makedirs(tmp_install_dir, exist_ok=True)
-        args = ["-DgRPC_INSTALL=ON", '-DCMAKE_INSTALL_PREFIX="{}"'.format(tmp_install_dir)] # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
-        if self.options.non_cpp_plugins:
-            args += ["-DCONAN_ADDITIONAL_PLUGINS=ON"]
-        if self.options.enable_mobile:
-            args += ["-DCONAN_ENABLE_MOBILE=ON"]
+
         cmake = CMake(self)
-        self.run('cmake {0}/{1} {2} {3}'.format(self.source_folder, self.folder, cmake.command_line, ' '.join(args)))
-        self.run("cmake --build . --target install {}".format(cmake.build_config))
+
+        if self.options.non_cpp_plugins:
+            cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "ON"
+        if self.options.enable_mobile:
+            cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON"
+
+        cmake.definitions['gRPC_INSTALL'] = "ON"
+        cmake.definitions['CMAKE_INSTALL_PREFIX'] = tmp_install_dir  # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
+
+        cmake.configure(source_folder='{0}/{1}'.format(self.source_folder, self.folder))
+        cmake.build()
+        cmake.install()
 
         # Patch the generated findGRPC .cmake files:
         # cmake_find_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())

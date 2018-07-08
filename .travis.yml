@@ -6,7 +6,7 @@ services:
 env:
   global:
     - CONAN_UPLOAD: 1
-    - CONAN_REFERENCE: "gRPC/1.13.0"
+    - CONAN_REFERENCE: "grpc/1.13.0"
     - CONAN_USERNAME: "inexorgame"
     - CONAN_CHANNEL: "stable"
     - CONAN_TOTAL_PAGES: 1
