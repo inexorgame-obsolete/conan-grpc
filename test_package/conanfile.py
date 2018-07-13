@@ -1,20 +1,15 @@
-from conans import ConanFile, CMake
+from conans import ConanFile, CMake, tools, RunEnvironment
 import os
-
-channel = os.getenv("CONAN_CHANNEL", "stable")
-username = os.getenv("CONAN_USERNAME", "inexorgame")
-package_ref = os.getenv("CONAN_REFERENCE", "grpc/1.13.0")
 
 
 class grpcTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    requires = "{}@{}/{}".format(package_ref, username, channel)
     generators = "cmake"
 
     def build(self):
         cmake = CMake(self)
-        self.run('cmake %s %s' % (self.source_folder, cmake.command_line))
-        self.run("cmake --build . %s" % cmake.build_config)
+        cmake.configure()
+        cmake.build()
 #        if self.settings.os == "Macos":
  #           self.run("cd bin; for LINK_DESTINATION in $(otool -L client | grep libproto | cut -f 1 -d' '); do install_name_tool -change \"$LINK_DESTINATION\" \"@executable_path/$(basename $LINK_DESTINATION)\" client; done")
 
@@ -22,4 +17,11 @@ class grpcTestConan(ConanFile):
         self.copy("*", "bin", "bin")
 
     def test(self):
-        self.run(os.path.join(".", "bin", "greeter_client"))
+        with tools.environment_append(RunEnvironment(self).vars):
+            bin_path = os.path.join("bin", "test_package")
+            if self.settings.os == "Windows":
+                self.run(bin_path)
+            elif self.settings.os == "Macos":
+                self.run("DYLD_LIBRARY_PATH=%s %s" % (os.environ.get("DYLD_LIBRARY_PATH", ""), bin_path))
+            else:
+                self.run("LD_LIBRARY_PATH=%s %s" % (os.environ.get("LD_LIBRARY_PATH", ""), bin_path))

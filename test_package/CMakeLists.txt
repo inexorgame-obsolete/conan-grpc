@@ -1,4 +1,4 @@
-project(MyHello)
+project(test_package)
 cmake_minimum_required(VERSION 2.8)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -76,8 +76,8 @@ if(MSVC)
 endif()
 
 include_directories(${Protobuf_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR}) # CMAKE_CURRENT_BINARY_DIR is where our generated files are (.pb.hpp)
-add_executable(greeter_client greeter_client.cc ${SRC_FILE} ${HEADER_FILE} ${GRPC_SRC_FILE} ${GRPC_HEADER_FILE})
+add_executable(${PROJECT_NAME} greeter_client.cc ${SRC_FILE} ${HEADER_FILE} ${GRPC_SRC_FILE} ${GRPC_HEADER_FILE})
 if(NOT TARGET protobuf::libprotobuf)
     message(FATAL_ERROR "WE DIDN'T FIND LIBPROTOBUFS IMPORT TARGET (Protobuf_LIBRARIES = ${Protobuf_LIBRARIES})")
 endif()
-target_link_libraries(greeter_client ${CONAN_LIBS}) # This is still faulty: protobuf::libprotobuf gRPC::grpc++ gRPC::grpc does not work (neither with gRPC::gpr OpenSSL::SSL added)
+target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS}) # This is still faulty: protobuf::libprotobuf gRPC::grpc++ gRPC::grpc does not work (neither with gRPC::gpr OpenSSL::SSL added)
