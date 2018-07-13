@@ -20,6 +20,7 @@ class grpcConan(ConanFile):
     enable_mobile=False
     non_cpp_plugins=False
     '''
+    exports_sources = "CMakeLists.txt",
     generators = "cmake"
     short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
 
@@ -32,11 +33,6 @@ class grpcConan(ConanFile):
         os.rename("grpc-{!s}".format(self.version), self.source_subfolder)
 
         cmake_name = "{}/CMakeLists.txt".format(self.source_subfolder)
-
-        # tell grpc to use our deps and flags
-        tools.replace_in_file(cmake_name, "project(${PACKAGE_NAME} C CXX)", '''project(${PACKAGE_NAME} C CXX)
-        include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-        conan_basic_setup()''')
 
         # skip installing the headers, TODO: use these!
         tools.replace_in_file(cmake_name, '''  install(FILES ${{_hdr}}{0!s}    DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  ){0!s}'''.format('\n'), '''  # install(FILES ${{_hdr}}{0!s}    # DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  # ){0!s}'''.format('\n'))
@@ -94,7 +90,7 @@ class grpcConan(ConanFile):
         cmake.definitions['gRPC_GFLAGS_PROVIDER'] = "package"
         cmake.definitions['gRPC_BENCHMARK_PROVIDER'] = "package"
 
-        cmake.configure(source_folder='{}'.format(self.source_subfolder))
+        cmake.configure(build_folder=self.build_subfolder)
         return cmake
 
     def build(self):
