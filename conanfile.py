@@ -64,7 +64,8 @@ class grpcConan(ConanFile):
 
     def _configure_cmake(self):
         tmp_install_dir = "{}/install".format(self.build_folder)
-        os.makedirs(tmp_install_dir, exist_ok=True)
+        if not os.path.exists(tmp_install_dir):
+            os.makedirs(tmp_install_dir)
 
         cmake = CMake(self)
 
