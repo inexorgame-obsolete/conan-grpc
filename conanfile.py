@@ -14,11 +14,15 @@ class grpcConan(ConanFile):
     options = {
             "shared": [True, False],
             "enable_mobile": [True, False],  # Enables iOS and Android support
-            "non_cpp_plugins": [True, False]  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
+            "non_cpp_plugins": [True, False],  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
+            "target_all": [True, False],  # Build everything
+            "target_grpcpp": [True, False]  # Build grpc++
             }
     default_options = '''shared=False
     enable_mobile=False
     non_cpp_plugins=False
+    target_all=False
+    target_grpcpp=True
     '''
     exports_sources = "CMakeLists.txt",
     generators = "cmake"
@@ -32,35 +36,35 @@ class grpcConan(ConanFile):
         tools.get(archive_url, sha256="a44cdd8f2b48b7356f9e1dfbb17d8b1967fea7cd71abfb587f25915904f27f87")
         os.rename("grpc-{!s}".format(self.version), self.source_subfolder)
 
-        cmake_name = "{}/CMakeLists.txt".format(self.source_subfolder)
+        # cmake_name = "{}/CMakeLists.txt".format(self.source_subfolder)
 
         # skip installing the headers, TODO: use these!
-        tools.replace_in_file(cmake_name, '''  install(FILES ${{_hdr}}{0!s}    DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  ){0!s}'''.format('\n'), '''  # install(FILES ${{_hdr}}{0!s}    # DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  # ){0!s}'''.format('\n'))
+        # tools.replace_in_file(cmake_name, '''  install(FILES ${{_hdr}}{0!s}    DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  # ){0!s}'''.format('\n'), '''  # install(FILES ${{_hdr}}{0!s}    # DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  # # ){0!s}'''.format('\n'))
 
         # Add some CMake Variables (effectively commenting out stuff we do not support)
-        tools.replace_in_file(cmake_name, "add_library(grpc_cronet", '''if(CONAN_ENABLE_MOBILE)
-        add_library(grpc_cronet''')
-        tools.replace_in_file(cmake_name, "add_library(grpc_unsecure", '''endif(CONAN_ENABLE_MOBILE)
-        add_library(grpc_unsecure''')
-        tools.replace_in_file(cmake_name, "add_library(grpc++_cronet", '''if(CONAN_ENABLE_MOBILE)
-        add_library(grpc++_cronet''')
-        tools.replace_in_file(cmake_name, "add_library(grpc++_reflection", '''endif(CONAN_ENABLE_MOBILE)
-        if(CONAN_ENABLE_REFLECTION_LIBS)
-        add_library(grpc++_reflection''')
-        tools.replace_in_file(cmake_name, "add_library(grpc++_unsecure", '''endif(CONAN_ENABLE_REFLECTION_LIBS)
-        add_library(grpc++_unsecure''')
+        # tools.replace_in_file(cmake_name, "add_library(grpc_cronet", '''if(CONAN_ENABLE_MOBILE)
+        # add_library(grpc_cronet''')
+        # tools.replace_in_file(cmake_name, "add_library(grpc_unsecure", '''endif(CONAN_ENABLE_MOBILE)
+        # add_library(grpc_unsecure''')
+        # tools.replace_in_file(cmake_name, "add_library(grpc++_cronet", '''if(CONAN_ENABLE_MOBILE)
+        # add_library(grpc++_cronet''')
+        # tools.replace_in_file(cmake_name, "add_library(grpc++_reflection", '''endif(CONAN_ENABLE_MOBILE)
+        # if(CONAN_ENABLE_REFLECTION_LIBS)
+        # add_library(grpc++_reflection''')
+        # tools.replace_in_file(cmake_name, "add_library(grpc++_unsecure", '''endif(CONAN_ENABLE_REFLECTION_LIBS)
+        # add_library(grpc++_unsecure''')
         # tools.replace_in_file(cmake_name, "add_library(grpc_csharp_ext", '''if(CONAN_ADDITIONAL_PLUGINS)
         # add_library(grpc_csharp_ext''') # not available anymore in v1.1.0
         # tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''endif(CONAN_ADDITIONAL_PLUGINS)
-        tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''
-        if(CONAN_ADDITIONAL_BINS)
-        add_executable(gen_hpack_tables''')
-        tools.replace_in_file(cmake_name, "add_executable(gen_legal_metadata_characters", '''endif(CONAN_ADDITIONAL_BINS)
-        add_executable(gen_legal_metadata_characters''')
-        tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
-        add_executable(grpc_csharp_plugin''')
+        # tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''
+        # if(CONAN_ADDITIONAL_BINS)
+        # add_executable(gen_hpack_tables''')
+        # tools.replace_in_file(cmake_name, "add_executable(gen_legal_metadata_characters", '''endif(CONAN_ADDITIONAL_BINS)
+        # add_executable(gen_legal_metadata_characters''')
+        # tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
+        # add_executable(grpc_csharp_plugin''')
 
-        tools.replace_in_file(cmake_name, '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif()'''.format('\n'), '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif(){0!s}endif(CONAN_ADDITIONAL_PLUGINS)'''.format('\n'))
+        # tools.replace_in_file(cmake_name, '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif()'''.format('\n'), '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif(){0!s}endif(CONAN_ADDITIONAL_PLUGINS)'''.format('\n'))
 
     def _configure_cmake(self):
         tmp_install_dir = "{}/install".format(self.build_folder)
@@ -96,7 +100,13 @@ class grpcConan(ConanFile):
 
     def build(self):
         cmake = self._configure_cmake()
-        cmake.build()
+
+        if self.options.target_grpcpp:
+            cmake.build(target="grpc++")
+
+        if self.options.target_all:
+            cmake.build()
+
 
         # Patch the generated findGRPC .cmake files:
         # cmake_find_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
@@ -106,7 +116,7 @@ class grpcConan(ConanFile):
 
     def package(self):
         cmake = self._configure_cmake()
-        cmake.install()
+        # cmake.install()
 
         cmake_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
         cmake_files = ["gRPCConfig.cmake", "gRPCConfigVersion.cmake", "gRPCTargets.cmake"]
