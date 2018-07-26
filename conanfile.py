@@ -4,7 +4,7 @@ import os
 
 class grpcConan(ConanFile):
     name = "grpc"
-    version = "1.13.0"
+    version = "1.14.0-pre1"
     description = "Google's RPC library and framework."
     url = "https://github.com/inexorgame/conan-grpc"
     homepage = "https://github.com/grpc/grpc"
@@ -31,7 +31,7 @@ class grpcConan(ConanFile):
 
     def source(self):
         archive_url = "https://github.com/grpc/grpc/archive/v{}.zip".format(self.version)
-        tools.get(archive_url, sha256="a44cdd8f2b48b7356f9e1dfbb17d8b1967fea7cd71abfb587f25915904f27f87")
+        tools.get(archive_url, sha256="7f9431ffc65957989b361bbadb1fa1afe345abf67cf2a0315f8f9d84d2e70611")
         os.rename("grpc-{!s}".format(self.version), self.source_subfolder)
 
         cmake_name = "{}/CMakeLists.txt".format(self.source_subfolder)
@@ -65,21 +65,22 @@ class grpcConan(ConanFile):
     def _configure_cmake(self):
         cmake = CMake(self)
 
+        # This doesn't work yet as one would expect, because the install target builds everything
+        # and we need the install target because of the generated CMake files
         if self.options.non_cpp_plugins:
             cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "ON"
         else:
             cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "OFF"
 
-        # This doesn't work yet as one would expect, because the install target builds everything
-        # and we need the install target because of the generated CMake files
+        # Doesn't work yet for the same reason as above
+        if self.options.enable_mobile:
+            cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON"
+
         if self.options.build_csharp_ext:
-            cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON"  # This will be available post-1.13.0
+            cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON"
         else:
             cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "OFF"
 
-
-        if self.options.enable_mobile:
-            cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON"
 
         # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
         cmake.definitions['gRPC_INSTALL'] = "ON"
@@ -104,6 +105,7 @@ class grpcConan(ConanFile):
         cmake = self._configure_cmake()
         cmake.install()
 
+        self.copy(pattern="LICENSE", dst="licenses")
         self.copy('*', dst='include', src='{}/include'.format(self.source_subfolder))
         self.copy('*.cmake', dst='lib', src='{}/lib'.format(self.build_subfolder), keep_path=True)
         self.copy("*.lib", dst="lib", src="", keep_path=False)
