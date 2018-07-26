@@ -14,11 +14,13 @@ class grpcConan(ConanFile):
     options = {
             "shared": [True, False],
             "enable_mobile": [True, False],  # Enables iOS and Android support
-            "non_cpp_plugins": [True, False]  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
+            "non_cpp_plugins": [True, False],  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
+            "build_csharp_ext": [True, False]
             }
     default_options = '''shared=False
     enable_mobile=False
     non_cpp_plugins=False
+    build_csharp_ext=False
     '''
     exports_sources = "CMakeLists.txt",
     generators = "cmake"
@@ -49,8 +51,6 @@ class grpcConan(ConanFile):
         add_library(grpc++_reflection''')
         tools.replace_in_file(cmake_name, "add_library(grpc++_unsecure", '''endif(CONAN_ENABLE_REFLECTION_LIBS)
         add_library(grpc++_unsecure''')
-        # tools.replace_in_file(cmake_name, "add_library(grpc_csharp_ext", '''if(CONAN_ADDITIONAL_PLUGINS)
-        # add_library(grpc_csharp_ext''') # not available anymore in v1.1.0
         # tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''endif(CONAN_ADDITIONAL_PLUGINS)
         tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''
         if(CONAN_ADDITIONAL_BINS)
@@ -63,25 +63,27 @@ class grpcConan(ConanFile):
         tools.replace_in_file(cmake_name, '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif()'''.format('\n'), '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif(){0!s}endif(CONAN_ADDITIONAL_PLUGINS)'''.format('\n'))
 
     def _configure_cmake(self):
-        tmp_install_dir = "{}/install".format(self.build_folder)
-        if not os.path.exists(tmp_install_dir):
-            os.makedirs(tmp_install_dir)
-
         cmake = CMake(self)
 
         if self.options.non_cpp_plugins:
             cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "ON"
-            # cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON"  # This will be available post-1.13.0
         else:
             cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "OFF"
-            # cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "OFF"
+
+        # This doesn't work yet as one would expect, because the install target builds everything
+        # and we need the install target because of the generated CMake files
+        if self.options.build_csharp_ext:
+            cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON"  # This will be available post-1.13.0
+        else:
+            cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "OFF"
+
 
         if self.options.enable_mobile:
             cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON"
 
         # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
         cmake.definitions['gRPC_INSTALL'] = "ON"
-        cmake.definitions['CMAKE_INSTALL_PREFIX'] = tmp_install_dir
+        # cmake.definitions['CMAKE_INSTALL_PREFIX'] = self.build_subfolder
 
         # tell grpc to use the find_package versions
         cmake.definitions['gRPC_CARES_PROVIDER'] = "package"
@@ -98,24 +100,12 @@ class grpcConan(ConanFile):
         cmake = self._configure_cmake()
         cmake.build()
 
-        # Patch the generated findGRPC .cmake files:
-        # cmake_find_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
-        # cmake_find_file = "{}/gRPCTargets.cmake".format(cmake_find_folder)
-        # tools.replace_in_file(cmake_find_file, 'get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)', '''get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-        # set(_IMPORT_PREFIX ${CONAN_GRPC_ROOT}) # NOTE: ADDED by conan''')
-
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
 
-        cmake_folder = "{}/cmake/gRPC".format(self.get_install_lib_path())
-        cmake_files = ["gRPCConfig.cmake", "gRPCConfigVersion.cmake", "gRPCTargets.cmake"]
-        for file in cmake_files:
-            self.copy(file, dst='.', src=cmake_folder)
-        # Copy the build_type specific file only for our used one:
-        self.copy("gRPCTargets-{}.cmake".format("debug" if self.settings.build_type == "Debug" else "release"), dst=".", src=cmake_folder)
-
         self.copy('*', dst='include', src='{}/include'.format(self.source_subfolder))
+        self.copy('*.cmake', dst='lib', src='{}/lib'.format(self.build_subfolder), keep_path=True)
         self.copy("*.lib", dst="lib", src="", keep_path=False)
         self.copy("*.a", dst="lib", src="", keep_path=False)
         self.copy("*", dst="bin", src="bin")
@@ -126,11 +116,3 @@ class grpcConan(ConanFile):
         self.cpp_info.libs = ["grpc", "grpc++", "grpc_unsecure", "grpc++_unsecure", "gpr"]
         if self.settings.compiler == "Visual Studio":
             self.cpp_info.libs += ["wsock32", "ws2_32"]
-
-    def get_install_lib_path(self):
-        install_path = "{}/install".format(self.build_subfolder)
-        if os.path.isfile("{}/lib/cmake/gRPC/gRPCTargets.cmake".format(install_path)):
-            return "{}/lib".format(install_path)
-        elif os.path.isfile("{}/lib64/cmake/gRPC/gRPCTargets.cmake".format(install_path)):
-            return "{}/lib64".format(install_path)
-        # its "{}/install/{{lib|lib64}}/cmake/gRPC/gRPCTargets.cmake".format(self.build_folder)
