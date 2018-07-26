@@ -1,36 +1,35 @@
 build: false
+
 environment:
     PYTHON: "C:\\Python27"
     PYTHON_VERSION: "2.7.8"
     PYTHON_ARCH: "32"
 
-    CONAN_UPLOAD: 1
-    CONAN_REFERENCE: "grpc/1.13.0"
-    CONAN_USERNAME: "inexorgame"
-    CONAN_CHANNEL: "stable"
-    CONAN_TOTAL_PAGES: 16
-
     matrix:
-        - CONAN_CURRENT_PAGE: 1
-        - CONAN_CURRENT_PAGE: 2
-        - CONAN_CURRENT_PAGE: 3
-        - CONAN_CURRENT_PAGE: 4
-        - CONAN_CURRENT_PAGE: 5
-        - CONAN_CURRENT_PAGE: 6
-        - CONAN_CURRENT_PAGE: 7
-        - CONAN_CURRENT_PAGE: 8
-        - CONAN_CURRENT_PAGE: 9
-        - CONAN_CURRENT_PAGE: 10
-        - CONAN_CURRENT_PAGE: 11
-        - CONAN_CURRENT_PAGE: 12
-        - CONAN_CURRENT_PAGE: 13
-        - CONAN_CURRENT_PAGE: 14
-        - CONAN_CURRENT_PAGE: 15
-        - CONAN_CURRENT_PAGE: 16
+        #- MINGW_CONFIGURATIONS: '4.9@x86_64@seh@posix, 4.9@x86_64@sjlj@posix, 4.9@x86@sjlj@posix, 4.9@x86@dwarf2@posix, 6@x86_64@seh@posix, 7@x86_64@seh@posix'
+        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+          CONAN_VISUAL_VERSIONS: 12
+          CONAN_BUILD_TYPES: Release
+        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+          CONAN_VISUAL_VERSIONS: 12
+          CONAN_BUILD_TYPES: Debug
+        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+          CONAN_VISUAL_VERSIONS: 14
+          CONAN_BUILD_TYPES: Release
+        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+          CONAN_VISUAL_VERSIONS: 14
+          CONAN_BUILD_TYPES: Debug
+        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+          CONAN_VISUAL_VERSIONS: 15
+          CONAN_BUILD_TYPES: Release
+        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+          CONAN_VISUAL_VERSIONS: 15
+          CONAN_BUILD_TYPES: Debug
 
 install:
   - set PATH=%PATH%;%PYTHON%/Scripts/
-  - pip.exe install conan_package_tools # It install conan too
+  - pip.exe install conan --upgrade
+  - pip.exe install conan_package_tools bincrafters_package_tools
   - conan user # It creates the conan data directory
 
 test_script:
