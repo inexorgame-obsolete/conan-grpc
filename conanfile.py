@@ -13,15 +13,16 @@ class grpcConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
-            "enable_mobile": [True, False],  # Enables iOS and Android support
-            "non_cpp_plugins": [True, False],  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
+            # "enable_mobile": [True, False],  # Enables iOS and Android support
+            # "non_cpp_plugins": [True, False],  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
             "build_csharp_ext": [True, False]
             }
     default_options = '''shared=False
-    enable_mobile=False
-    non_cpp_plugins=False
     build_csharp_ext=False
     '''
+    # enable_mobile=False
+    # non_cpp_plugins=False
+
     exports_sources = "CMakeLists.txt",
     generators = "cmake"
     short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
@@ -34,44 +35,44 @@ class grpcConan(ConanFile):
         tools.get(archive_url, sha256="7f9431ffc65957989b361bbadb1fa1afe345abf67cf2a0315f8f9d84d2e70611")
         os.rename("grpc-{!s}".format(self.version), self.source_subfolder)
 
-        cmake_name = "{}/CMakeLists.txt".format(self.source_subfolder)
+        # cmake_name = "{}/CMakeLists.txt".format(self.source_subfolder)
 
         # Add some CMake Variables (effectively commenting out stuff we do not support)
-        tools.replace_in_file(cmake_name, "add_library(grpc_cronet", '''if(CONAN_ENABLE_MOBILE)
-        add_library(grpc_cronet''')
-        tools.replace_in_file(cmake_name, "add_library(grpc_unsecure", '''endif(CONAN_ENABLE_MOBILE)
-        add_library(grpc_unsecure''')
-        tools.replace_in_file(cmake_name, "add_library(grpc++_cronet", '''if(CONAN_ENABLE_MOBILE)
-        add_library(grpc++_cronet''')
-        tools.replace_in_file(cmake_name, "add_library(grpc++_reflection", '''endif(CONAN_ENABLE_MOBILE)
-        if(CONAN_ENABLE_REFLECTION_LIBS)
-        add_library(grpc++_reflection''')
-        tools.replace_in_file(cmake_name, "add_library(grpc++_unsecure", '''endif(CONAN_ENABLE_REFLECTION_LIBS)
-        add_library(grpc++_unsecure''')
-        # tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''endif(CONAN_ADDITIONAL_PLUGINS)
-        tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''
-        if(CONAN_ADDITIONAL_BINS)
-        add_executable(gen_hpack_tables''')
-        tools.replace_in_file(cmake_name, "add_executable(gen_legal_metadata_characters", '''endif(CONAN_ADDITIONAL_BINS)
-        add_executable(gen_legal_metadata_characters''')
-        tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
-        add_executable(grpc_csharp_plugin''')
-
-        tools.replace_in_file(cmake_name, '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif()'''.format('\n'), '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif(){0!s}endif(CONAN_ADDITIONAL_PLUGINS)'''.format('\n'))
+        # tools.replace_in_file(cmake_name, "add_library(grpc_cronet", '''if(CONAN_ENABLE_MOBILE)
+        # add_library(grpc_cronet''')
+        # tools.replace_in_file(cmake_name, "add_library(grpc_unsecure", '''endif(CONAN_ENABLE_MOBILE)
+        # add_library(grpc_unsecure''')
+        # tools.replace_in_file(cmake_name, "add_library(grpc++_cronet", '''if(CONAN_ENABLE_MOBILE)
+        # add_library(grpc++_cronet''')
+        # tools.replace_in_file(cmake_name, "add_library(grpc++_reflection", '''endif(CONAN_ENABLE_MOBILE)
+        # if(CONAN_ENABLE_REFLECTION_LIBS)
+        # add_library(grpc++_reflection''')
+        # tools.replace_in_file(cmake_name, "add_library(grpc++_unsecure", '''endif(CONAN_ENABLE_REFLECTION_LIBS)
+        # add_library(grpc++_unsecure''')
+        # # tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''endif(CONAN_ADDITIONAL_PLUGINS)
+        # tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''
+        # if(CONAN_ADDITIONAL_BINS)
+        # add_executable(gen_hpack_tables''')
+        # tools.replace_in_file(cmake_name, "add_executable(gen_legal_metadata_characters", '''endif(CONAN_ADDITIONAL_BINS)
+        # add_executable(gen_legal_metadata_characters''')
+        # tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
+        # add_executable(grpc_csharp_plugin''')
+        #
+        # tools.replace_in_file(cmake_name, '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif()'''.format('\n'), '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif(){0!s}endif(CONAN_ADDITIONAL_PLUGINS)'''.format('\n'))
 
     def _configure_cmake(self):
         cmake = CMake(self)
 
         # This doesn't work yet as one would expect, because the install target builds everything
         # and we need the install target because of the generated CMake files
-        if self.options.non_cpp_plugins:
-            cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "ON"
-        else:
-            cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "OFF"
-
-        # Doesn't work yet for the same reason as above
-        if self.options.enable_mobile:
-            cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON"
+        # if self.options.non_cpp_plugins:
+        #     cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "ON"
+        # else:
+        #     cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "OFF"
+        #
+        # # Doesn't work yet for the same reason as above
+        # if self.options.enable_mobile:
+        #     cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON"
 
         if self.options.build_csharp_ext:
             cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON"
