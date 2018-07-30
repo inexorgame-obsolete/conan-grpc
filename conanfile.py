@@ -13,6 +13,7 @@ class grpcConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {
             "shared": [True, False],
+            "fPIC": [True, False],
             # "enable_mobile": [True, False],  # Enables iOS and Android support
             # "non_cpp_plugins": [True, False],  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
             "build_csharp_ext": [True, False],
@@ -21,6 +22,7 @@ class grpcConan(ConanFile):
     default_options = '''shared=False
     build_codegen=True
     build_csharp_ext=False
+    fPIC=True
     '''
     # enable_mobile=False
     # non_cpp_plugins=False
@@ -31,6 +33,10 @@ class grpcConan(ConanFile):
 
     source_subfolder = "source_subfolder"
     build_subfolder = "build_subfolder"
+
+    def configure(self):
+        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+            del self.options.fPIC
 
     def source(self):
         archive_url = "https://github.com/grpc/grpc/archive/v{}.zip".format(self.version)
