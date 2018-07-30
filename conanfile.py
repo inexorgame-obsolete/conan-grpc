@@ -36,9 +36,6 @@ class grpcConan(ConanFile):
 
         cmake_name = "{}/CMakeLists.txt".format(self.source_subfolder)
 
-        # skip installing the headers, TODO: use these!
-        tools.replace_in_file(cmake_name, '''  install(FILES ${{_hdr}}{0!s}    DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  ){0!s}'''.format('\n'), '''  # install(FILES ${{_hdr}}{0!s}    # DESTINATION "${{gRPC_INSTALL_INCLUDEDIR}}/${{_path}}"{0!s}  # ){0!s}'''.format('\n'))
-
         # Add some CMake Variables (effectively commenting out stuff we do not support)
         tools.replace_in_file(cmake_name, "add_library(grpc_cronet", '''if(CONAN_ENABLE_MOBILE)
         add_library(grpc_cronet''')
