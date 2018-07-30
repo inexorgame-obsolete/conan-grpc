@@ -15,9 +15,11 @@ class grpcConan(ConanFile):
             "shared": [True, False],
             # "enable_mobile": [True, False],  # Enables iOS and Android support
             # "non_cpp_plugins": [True, False],  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
-            "build_csharp_ext": [True, False]
+            "build_csharp_ext": [True, False],
+            "build_codegen": [True, False]
             }
     default_options = '''shared=False
+    build_codegen=True
     build_csharp_ext=False
     '''
     # enable_mobile=False
@@ -74,10 +76,8 @@ class grpcConan(ConanFile):
         # if self.options.enable_mobile:
         #     cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON"
 
-        if self.options.build_csharp_ext:
-            cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON"
-        else:
-            cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "OFF"
+        cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON" if self.options.build_csharp_ext else "OFF"
+        cmake.definitions['gRPC_BUILD_CODEGEN'] = "ON" if self.options.build_codegen else "OFF"
 
 
         # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
