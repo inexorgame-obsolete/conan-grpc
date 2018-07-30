@@ -16,11 +16,13 @@ class grpcConan(ConanFile):
             # "enable_mobile": [True, False],  # Enables iOS and Android support
             # "non_cpp_plugins": [True, False],  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
             "build_csharp_ext": [True, False],
-            "build_codegen": [True, False]
+            "build_codegen": [True, False],
+            "build_tests": [True, False]
             }
     default_options = '''shared=False
     build_codegen=True
     build_csharp_ext=False
+    build_tests=False
     '''
     # enable_mobile=False
     # non_cpp_plugins=False
@@ -78,6 +80,7 @@ class grpcConan(ConanFile):
 
         cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON" if self.options.build_csharp_ext else "OFF"
         cmake.definitions['gRPC_BUILD_CODEGEN'] = "ON" if self.options.build_codegen else "OFF"
+        cmake.definitions['gRPC_BUILD_TESTS'] = "ON" if self.options.build_tests else "OFF"
 
 
         # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
@@ -94,6 +97,10 @@ class grpcConan(ConanFile):
 
         cmake.configure(build_folder=self.build_subfolder)
         return cmake
+
+    def build_requirements(self):
+        if self.options.build_tests:
+            self.build_requires("gtest/1.8.0@bincrafters/stable")
 
     def build(self):
         cmake = self._configure_cmake()
