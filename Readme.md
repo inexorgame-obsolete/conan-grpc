@@ -1,4 +1,4 @@
-# Conan package for GRPC
+# Conan package for gRPC
 
 The Google provided RPC framework.
 
