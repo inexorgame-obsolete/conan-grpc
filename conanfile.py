@@ -14,18 +14,14 @@ class grpcConan(ConanFile):
     options = {
             "shared": [True, False],
             "fPIC": [True, False],
-            # "enable_mobile": [True, False],  # Enables iOS and Android support
-            # "non_cpp_plugins": [True, False],  # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
             "build_csharp_ext": [True, False],
             "build_codegen": [True, False]
-            }
+    }
     default_options = '''shared=False
     build_codegen=True
     build_csharp_ext=False
     fPIC=True
     '''
-    # enable_mobile=False
-    # non_cpp_plugins=False
 
     exports_sources = "CMakeLists.txt",
     generators = "cmake"
@@ -45,42 +41,35 @@ class grpcConan(ConanFile):
 
         # cmake_name = "{}/CMakeLists.txt".format(self.source_subfolder)
 
-        # Add some CMake Variables (effectively commenting out stuff we do not support)
-        # tools.replace_in_file(cmake_name, "add_library(grpc_cronet", '''if(CONAN_ENABLE_MOBILE)
-        # add_library(grpc_cronet''')
-        # tools.replace_in_file(cmake_name, "add_library(grpc_unsecure", '''endif(CONAN_ENABLE_MOBILE)
-        # add_library(grpc_unsecure''')
-        # tools.replace_in_file(cmake_name, "add_library(grpc++_cronet", '''if(CONAN_ENABLE_MOBILE)
-        # add_library(grpc++_cronet''')
-        # tools.replace_in_file(cmake_name, "add_library(grpc++_reflection", '''endif(CONAN_ENABLE_MOBILE)
-        # if(CONAN_ENABLE_REFLECTION_LIBS)
-        # add_library(grpc++_reflection''')
-        # tools.replace_in_file(cmake_name, "add_library(grpc++_unsecure", '''endif(CONAN_ENABLE_REFLECTION_LIBS)
-        # add_library(grpc++_unsecure''')
-        # # tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''endif(CONAN_ADDITIONAL_PLUGINS)
-        # tools.replace_in_file(cmake_name, "add_executable(gen_hpack_tables", '''
-        # if(CONAN_ADDITIONAL_BINS)
-        # add_executable(gen_hpack_tables''')
-        # tools.replace_in_file(cmake_name, "add_executable(gen_legal_metadata_characters", '''endif(CONAN_ADDITIONAL_BINS)
-        # add_executable(gen_legal_metadata_characters''')
-        # tools.replace_in_file(cmake_name, "add_executable(grpc_csharp_plugin", '''if(CONAN_ADDITIONAL_PLUGINS)
-        # add_executable(grpc_csharp_plugin''')
-        #
-        # tools.replace_in_file(cmake_name, '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif()'''.format('\n'), '''  install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets{0!s}    RUNTIME DESTINATION ${{gRPC_INSTALL_BINDIR}}{0!s}    LIBRARY DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}    ARCHIVE DESTINATION ${{gRPC_INSTALL_LIBDIR}}{0!s}  ){0!s}endif(){0!s}endif(CONAN_ADDITIONAL_PLUGINS)'''.format('\n'))
+        # Parts which should be options:
+        # grpc_cronet
+        # grpc++_cronet
+        # grpc_unsecure (?)
+        # grpc++_unsecure (?)
+        # grpc++_reflection
+        # gen_hpack_tables (?)
+        # gen_legal_metadata_characters (?)
+        # grpc_csharp_plugin
+        # grpc_node_plugin
+        # grpc_objective_c_plugin
+        # grpc_php_plugin
+        # grpc_python_plugin
+        # grpc_ruby_plugin
 
     def _configure_cmake(self):
         cmake = CMake(self)
 
         # This doesn't work yet as one would expect, because the install target builds everything
         # and we need the install target because of the generated CMake files
-        # if self.options.non_cpp_plugins:
-        #     cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "ON"
-        # else:
-        #     cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "OFF"
         #
-        # # Doesn't work yet for the same reason as above
-        # if self.options.enable_mobile:
-        #     cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON"
+        #   enable_mobile=False # Enables iOS and Android support
+        #   non_cpp_plugins=False # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
+        #
+        # cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "ON" if self.options.build_csharp_ext else "OFF"
+        #
+        # Doesn't work yet for the same reason as above
+        #
+        # cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON" if self.options.build_csharp_ext else "OFF"
 
         cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON" if self.options.build_csharp_ext else "OFF"
         cmake.definitions['gRPC_BUILD_CODEGEN'] = "ON" if self.options.build_codegen else "OFF"
