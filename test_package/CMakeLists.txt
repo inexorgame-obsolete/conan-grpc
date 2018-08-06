@@ -1,5 +1,5 @@
-project(test_package)
 cmake_minimum_required(VERSION 2.8.11)
+project(test_package)
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
@@ -73,8 +73,10 @@ endfunction()
 PROTOBUF_GENERATE_CPP(SRC_FILE HEADER_FILE helloworld.proto)
 GRPC_GENERATE_CPP(GRPC_SRC_FILE GRPC_HEADER_FILE helloworld.proto)
 
-if(MSVC)
-    add_definitions(-D_WIN32_WINNT=0x600) # This is a GRPC requirement!!
+if(NOT MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else()
+  add_definitions(-D_WIN32_WINNT=0x600)
 endif()
 
 include_directories(${Protobuf_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR}) # CMAKE_CURRENT_BINARY_DIR is where our generated files are (.pb.hpp)
