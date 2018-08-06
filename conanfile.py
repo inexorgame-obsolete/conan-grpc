@@ -12,14 +12,13 @@ class grpcConan(ConanFile):
     requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2o@conan/stable", "protobuf/3.5.2@bincrafters/stable", "c-ares/1.14.0@conan/stable"
     settings = "os", "compiler", "build_type", "arch"
     options = {
-            "shared": [True, False],
+            # "shared": [True, False],
             "fPIC": [True, False],
             "build_codegen": [True, False],
             "build_csharp_ext": [True, False],
             "build_tests": [True, False]
     }
-    default_options = '''shared=False
-    fPIC=True
+    default_options = '''fPIC=True
     build_codegen=True
     build_csharp_ext=False
     build_tests=False
