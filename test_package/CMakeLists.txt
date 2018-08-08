@@ -6,82 +6,62 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-if (MSVC)
-  add_definitions(/MP)
-endif (MSVC)
-
-find_package(gRPC REQUIRED)
-
-find_program(GRPC_GRPC_CPP_PLUGIN grpc_cpp_plugin PATHS ${CONAN_BIN_DIRS_GRPC} NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH )
-function(GRPC_GENERATE_CPP SRCS HDRS)
-  if(NOT ARGN)
-    message(SEND_ERROR "Error: GRPC_GENERATE_CPP() called without any proto files")
-    return()
-  endif()
-
-  if(PROTOBUF_GENERATE_CPP_APPEND_PATH)
-    # Create an include path for each file specified
-    foreach(FIL ${ARGN})
-      get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
-      get_filename_component(ABS_PATH ${ABS_FIL} PATH)
-      list(FIND _protobuf_include_path ${ABS_PATH} _contains_already)
-      if(${_contains_already} EQUAL -1)
-          list(APPEND _protobuf_include_path -I ${ABS_PATH})
-      endif()
-    endforeach()
-  else()
-    set(_protobuf_include_path -I ${CMAKE_CURRENT_SOURCE_DIR})
-  endif()
-
-  if(DEFINED Protobuf_IMPORT_DIRS)
-    foreach(DIR ${Protobuf_IMPORT_DIRS})
-      get_filename_component(ABS_PATH ${DIR} ABSOLUTE)
-      list(FIND _protobuf_include_path ${ABS_PATH} _contains_already)
-      if(${_contains_already} EQUAL -1)
-          list(APPEND _protobuf_include_path -I ${ABS_PATH})
-      endif()
-    endforeach()
-  endif()
-
-  set(${SRCS})
-  set(${HDRS})
-  foreach(FIL ${ARGN})
-    get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
-    get_filename_component(FIL_WE ${FIL} NAME_WE)
-
-    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.grpc.pb.cc")
-    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.grpc.pb.h")
-
-    add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.grpc.pb.cc"
-             "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.grpc.pb.h"
-      COMMAND  ${Protobuf_PROTOC_EXECUTABLE}
-          --plugin=protoc-gen-grpc=${GRPC_GRPC_CPP_PLUGIN}
-          --grpc_out=${CMAKE_CURRENT_BINARY_DIR}
-          ${_protobuf_include_path}
-          ${ABS_FIL}
-      DEPENDS ${ABS_FIL} ${Protobuf_PROTOC_EXECUTABLE} ${GRPC_GRPC_CPP_PLUGIN}
-      COMMENT "Running C++ protocol buffer compiler with the GRPC plugin on ${FIL}"
-      VERBATIM )
-  endforeach()
-
-  set_source_files_properties(${${SRCS}} ${${HDRS}} PROPERTIES GENERATED TRUE)
-  set(${SRCS} ${${SRCS}} PARENT_SCOPE)
-  set(${HDRS} ${${HDRS}} PARENT_SCOPE)
-endfunction()
-
-PROTOBUF_GENERATE_CPP(SRC_FILE HEADER_FILE helloworld.proto)
-GRPC_GENERATE_CPP(GRPC_SRC_FILE GRPC_HEADER_FILE helloworld.proto)
-
 if(NOT MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 else()
   add_definitions(-D_WIN32_WINNT=0x600)
 endif()
 
-include_directories(${Protobuf_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR}) # CMAKE_CURRENT_BINARY_DIR is where our generated files are (.pb.hpp)
-add_executable(${PROJECT_NAME} greeter_client.cc ${SRC_FILE} ${HEADER_FILE} ${GRPC_SRC_FILE} ${GRPC_HEADER_FILE})
-if(NOT TARGET protobuf::libprotobuf)
-    message(FATAL_ERROR "WE DIDN'T FIND LIBPROTOBUFS IMPORT TARGET (Protobuf_LIBRARIES = ${Protobuf_LIBRARIES})")
-endif()
-target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS}) # This is still faulty: protobuf::libprotobuf gRPC::grpc++ gRPC::grpc does not work (neither with gRPC::gpr OpenSSL::SSL added)
+# This branch assumes that gRPC and all its dependencies are already installed
+# on this system, so they can be located by find_package().
+
+# Find Protobuf installation
+# Looks for protobuf-config.cmake file installed by Protobuf's cmake installation.
+set(protobuf_MODULE_COMPATIBLE TRUE)
+find_package(Protobuf CONFIG REQUIRED)
+message(STATUS "Using protobuf ${protobuf_VERSION}")
+
+set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
+set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
+
+# Find gRPC installation
+# Looks for gRPCConfig.cmake file installed by gRPC's cmake installation.
+find_package(gRPC CONFIG REQUIRED)
+message(STATUS "Using gRPC ${gRPC_VERSION}")
+
+set(_GRPC_GRPCPP_UNSECURE gRPC::grpc++_unsecure)
+set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
+
+# Proto file
+get_filename_component(hw_proto "helloworld.proto" ABSOLUTE)
+get_filename_component(hw_proto_path "${hw_proto}" PATH)
+
+# Generated sources
+set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.cc")
+set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.h")
+set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.cc")
+set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.h")
+add_custom_command(
+      OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
+      COMMAND ${_PROTOBUF_PROTOC}
+      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
+        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+        -I "${hw_proto_path}"
+        --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+        "${hw_proto}"
+      DEPENDS "${hw_proto}")
+
+# Include generated *.pb.h files
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+
+# Targets greeter_[async_](client)
+foreach(_target
+  greeter_client)
+# greeter_server greeter_async_client greeter_async_server)
+  add_executable(${_target} "${_target}.cc"
+    ${hw_proto_srcs}
+    ${hw_grpc_srcs})
+  target_link_libraries(${_target}
+    ${_GRPC_GRPCPP_UNSECURE}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()

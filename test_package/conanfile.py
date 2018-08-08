@@ -19,5 +19,5 @@ class TestPackageConan(ConanFile):
         self.copy("*", "bin", "bin")
 
     def test(self):
-        bin_path = os.path.join("bin", "test_package")
+        bin_path = os.path.join(".", "bin", "greeter_client")
         self.run(bin_path, run_environment=True)
