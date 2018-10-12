@@ -4,7 +4,7 @@ import os
 
 class grpcConan(ConanFile):
     name = "grpc"
-    version = "1.15.1"
+    version = "1.16.0-pre1"
     description = "Google's RPC library and framework."
     url = "https://github.com/inexorgame/conan-grpc"
     homepage = "https://github.com/grpc/grpc"
@@ -12,24 +12,24 @@ class grpcConan(ConanFile):
     requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2p@conan/stable", "protobuf/3.6.1@bincrafters/stable", "c-ares/1.14.0@conan/stable"
     settings = "os", "compiler", "build_type", "arch"
     options = {
-            # "shared": [True, False],
-            "fPIC": [True, False],
-            "build_codegen": [True, False],
-            "build_csharp_ext": [True, False],
-            "build_tests": [True, False]
+        # "shared": [True, False],
+        "fPIC": [True, False],
+        "build_codegen": [True, False],
+        "build_csharp_ext": [True, False],
+        "build_tests": [True, False]
     }
-    default_options = '''fPIC=True
-    build_codegen=True
-    build_csharp_ext=False
-    build_tests=False
-    '''
-
+    default_options = {
+        "fPIC": True,
+        "build_codegen": True,
+        "build_csharp_ext": False,
+        "build_tests": False
+    }
     exports_sources = "CMakeLists.txt",
     generators = "cmake"
     short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
 
-    source_subfolder = "source_subfolder"
-    build_subfolder = "build_subfolder"
+    _source_subfolder = "source_subfolder"
+    _build_subfolder = "build_subfolder"
 
     def configure(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
@@ -40,10 +40,10 @@ class grpcConan(ConanFile):
 
     def source(self):
         archive_url = "https://github.com/grpc/grpc/archive/v{}.zip".format(self.version)
-        tools.get(archive_url, sha256="f43f017dfde2c57a9e9044697f6065b121831d64c186d1aff204540011d17250")
-        os.rename("grpc-{!s}".format(self.version), self.source_subfolder)
+        tools.get(archive_url, sha256="ee638c367747f0811a0ad05816ccb99d9e73cfa84d39727a3a4d63693036a89d")
+        os.rename("grpc-{!s}".format(self.version), self._source_subfolder)
 
-        # cmake_name = "{}/CMakeLists.txt".format(self.source_subfolder)
+        # cmake_name = "{}/CMakeLists.txt".format(self._source_subfolder)
 
         # Parts which should be options:
         # grpc_cronet
@@ -87,7 +87,7 @@ class grpcConan(ConanFile):
 
         # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
         cmake.definitions['gRPC_INSTALL'] = "ON"
-        # cmake.definitions['CMAKE_INSTALL_PREFIX'] = self.build_subfolder
+        # cmake.definitions['CMAKE_INSTALL_PREFIX'] = self._build_subfolder
 
         # tell grpc to use the find_package versions
         cmake.definitions['gRPC_CARES_PROVIDER'] = "package"
@@ -103,7 +103,7 @@ class grpcConan(ConanFile):
             cmake.definitions['gRPC_GFLAGS_PROVIDER'] = "none"
             cmake.definitions['gRPC_BENCHMARK_PROVIDER'] = "none"
 
-        cmake.configure(build_folder=self.build_subfolder)
+        cmake.configure(build_folder=self._build_subfolder)
         return cmake
 
     def build(self):
@@ -115,8 +115,8 @@ class grpcConan(ConanFile):
         cmake.install()
 
         self.copy(pattern="LICENSE", dst="licenses")
-        self.copy('*', dst='include', src='{}/include'.format(self.source_subfolder))
-        self.copy('*.cmake', dst='lib', src='{}/lib'.format(self.build_subfolder), keep_path=True)
+        self.copy('*', dst='include', src='{}/include'.format(self._source_subfolder))
+        self.copy('*.cmake', dst='lib', src='{}/lib'.format(self._build_subfolder), keep_path=True)
         self.copy("*.lib", dst="lib", src="", keep_path=False)
         self.copy("*.a", dst="lib", src="", keep_path=False)
         self.copy("*", dst="bin", src="bin")
