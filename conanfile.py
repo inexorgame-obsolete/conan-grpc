@@ -1,4 +1,5 @@
 from conans import ConanFile, CMake, tools
+from conans.errors import ConanInvalidConfiguration
 import os
 
 
@@ -6,11 +7,17 @@ class grpcConan(ConanFile):
     name = "grpc"
     version = "1.17.1"
     description = "Google's RPC library and framework."
+    topics = ("conan", "grpc", "rpc")
     url = "https://github.com/inexorgame/conan-grpc"
     homepage = "https://github.com/grpc/grpc"
+    author = "Bincrafters <bincrafters@gmail.com>"
     license = "Apache-2.0"
-    requires = "zlib/1.2.11@conan/stable", "OpenSSL/1.0.2q@conan/stable", "protobuf/3.6.1@bincrafters/stable", "c-ares/1.14.0@conan/stable"
-    settings = "os", "compiler", "build_type", "arch"
+    exports = ["LICENSE.md"]
+    exports_sources = ["CMakeLists.txt"]
+    generators = "cmake"
+    short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
+
+    settings = "os", "arch", "compiler", "build_type"
     options = {
         # "shared": [True, False],
         "fPIC": [True, False],
@@ -24,19 +31,23 @@ class grpcConan(ConanFile):
         "build_csharp_ext": False,
         "build_tests": False
     }
-    exports_sources = "CMakeLists.txt",
-    generators = "cmake"
-    short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
 
     _source_subfolder = "source_subfolder"
     _build_subfolder = "build_subfolder"
+
+    requires = (
+        "zlib/1.2.11@conan/stable",
+        "OpenSSL/1.0.2q@conan/stable",
+        "protobuf/3.6.1@bincrafters/stable",
+        "c-ares/1.14.0@conan/stable"
+    )
 
     def configure(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             del self.options.fPIC
             compiler_version = int(str(self.settings.compiler.version))
             if compiler_version < 14:
-                raise tools.ConanException("gRPC can only be built with Visual Studio 2015 or higher.")
+                raise ConanInvalidConfiguration("gRPC can only be built with Visual Studio 2015 or higher.")
 
     def source(self):
         archive_url = "https://github.com/grpc/grpc/archive/v{}.zip".format(self.version)
