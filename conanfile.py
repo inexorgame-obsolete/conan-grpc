@@ -1,4 +1,5 @@
 from conans import ConanFile, CMake, tools
+from conans.errors import ConanInvalidConfiguration
 import os
 
 
@@ -36,7 +37,7 @@ class grpcConan(ConanFile):
             del self.options.fPIC
             compiler_version = int(str(self.settings.compiler.version))
             if compiler_version < 14:
-                raise tools.ConanException("gRPC can only be built with Visual Studio 2015 or higher.")
+                raise ConanInvalidConfiguration("gRPC can only be built with Visual Studio 2015 or higher.")
 
     def source(self):
         archive_url = "https://github.com/grpc/grpc/archive/v{}.zip".format(self.version)
