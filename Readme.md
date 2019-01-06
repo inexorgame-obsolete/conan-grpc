@@ -1,5 +1,5 @@
 [![Download](https://api.bintray.com/packages/inexorgame/inexor-conan/grpc%3Ainexorgame/images/download.svg) ](https://bintray.com/inexorgame/inexor-conan/grpc%3Ainexorgame/_latestVersion)
-[![Build Status Travis](https://travis-ci.com/inexorgame/conan-grpc.svg?branch=stable%2F1.17.2)](https://travis-ci.com/inexorgame/conan-grpc)
+[![Build Status Travis](https://travis-ci.org/inexorgame/conan-grpc.svg?branch=stable%2F1.17.2)](https://travis-ci.org/inexorgame/conan-grpc)
 [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/inexorgame/conan-grpc?branch=stable%2F1.17.2&svg=true)](https://ci.appveyor.com/project/inexorgame/conan-grpc)
 
 ## Conan package recipe for [*grpc*](https://github.com/grpc/grpc)
