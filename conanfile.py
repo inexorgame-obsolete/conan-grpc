@@ -5,7 +5,7 @@ import os
 
 class grpcConan(ConanFile):
     name = "grpc"
-    version = "1.17.2"
+    version = "1.18.0"
     description = "Google's RPC library and framework."
     topics = ("conan", "grpc", "rpc")
     url = "https://github.com/inexorgame/conan-grpc"
@@ -52,7 +52,7 @@ class grpcConan(ConanFile):
 
     def source(self):
         archive_url = "https://github.com/grpc/grpc/archive/v{}.zip".format(self.version)
-        tools.get(archive_url, sha256="9ebbf19d1efdcb75e9f7780ded5ee9ddaa6f9bee568dbc137ca4441dedfe134f")
+        tools.get(archive_url, sha256="085a272fc639667b9115603b84c9fb80821e565b7af6cdcec721d2258692e2bd")
         os.rename("grpc-{!s}".format(self.version), self._source_subfolder)
 
         # cmake_name = "{}/CMakeLists.txt".format(self._source_subfolder)
