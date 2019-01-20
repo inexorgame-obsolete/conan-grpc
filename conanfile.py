@@ -136,6 +136,13 @@ class grpcConan(ConanFile):
         self.copy("*.so", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ["grpc", "grpc++", "grpc_unsecure", "grpc++_unsecure", "gpr", "address_sorting"]
+        self.cpp_info.libs = [
+            "grpc",
+            "grpc++",
+            "grpc_unsecure",
+            "grpc++_unsecure",
+            "gpr",
+            "address_sorting"
+        ]
         if self.settings.compiler == "Visual Studio":
             self.cpp_info.libs += ["wsock32", "ws2_32"]
