@@ -138,10 +138,10 @@ class grpcConan(ConanFile):
     def package_info(self):
         self.env_info.path.append(os.path.join(self.package_folder, "bin"))
         self.cpp_info.libs = [
-            "grpc",
             "grpc++",
-            "grpc_unsecure",
+            "grpc",
             "grpc++_unsecure",
+            "grpc_unsecure",
             "gpr",
             "address_sorting"
         ]
