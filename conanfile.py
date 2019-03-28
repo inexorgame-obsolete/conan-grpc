@@ -136,7 +136,7 @@ class grpcConan(ConanFile):
         self.copy("*.so", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.env_info.path.append(os.path.join(self.package_folder, "bin"))
+        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
         self.cpp_info.libs = [
             "grpc++",
             "grpc",
