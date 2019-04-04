@@ -115,6 +115,11 @@ class grpcConan(ConanFile):
             cmake.definitions['gRPC_GFLAGS_PROVIDER'] = "none"
             cmake.definitions['gRPC_BENCHMARK_PROVIDER'] = "none"
 
+        # compilation on minGW gcc requires to set _WIN32_WINNTT to at least 0x600
+        if self.settings.os == "Windows" and self.settings.compiler == "gcc":
+            cmake.definitions["CMAKE_CXX_FLAGS"]="-D_WIN32_WINNT=0x600"
+            cmake.definitions["CMAKE_C_FLAGS"]="-D_WIN32_WINNT=0x600"
+
         cmake.configure(build_folder=self._build_subfolder)
         return cmake
 
