@@ -75,7 +75,7 @@ class grpcConan(ConanFile):
     def build_requirements(self):
         if self.options.build_tests:
             self.build_requires("benchmark/1.4.1@inexorgame/stable")
-            self.build_requires("gflags/2.2.1@bincrafters/stable")
+            self.build_requires("gflags/2.2.2@bincrafters/stable")
 
     def _configure_cmake(self):
         cmake = CMake(self)
