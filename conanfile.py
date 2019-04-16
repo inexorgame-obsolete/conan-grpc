@@ -22,14 +22,12 @@ class grpcConan(ConanFile):
         # "shared": [True, False],
         "fPIC": [True, False],
         "build_codegen": [True, False],
-        "build_csharp_ext": [True, False],
-        "build_tests": [True, False]
+        "build_csharp_ext": [True, False]
     }
     default_options = {
         "fPIC": True,
         "build_codegen": True,
-        "build_csharp_ext": False,
-        "build_tests": False
+        "build_csharp_ext": False
     }
 
     _source_subfolder = "source_subfolder"
@@ -72,11 +70,6 @@ class grpcConan(ConanFile):
         # grpc_python_plugin
         # grpc_ruby_plugin
 
-    def build_requirements(self):
-        if self.options.build_tests:
-            self.build_requires("benchmark/1.4.1@inexorgame/stable")
-            self.build_requires("gflags/2.2.2@bincrafters/stable")
-
     def _configure_cmake(self):
         cmake = CMake(self)
 
@@ -95,7 +88,7 @@ class grpcConan(ConanFile):
 
         cmake.definitions['gRPC_BUILD_CODEGEN'] = "ON" if self.options.build_codegen else "OFF"
         cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON" if self.options.build_csharp_ext else "OFF"
-        cmake.definitions['gRPC_BUILD_TESTS'] = "ON" if self.options.build_tests else "OFF"
+        cmake.definitions['gRPC_BUILD_TESTS'] = "OFF"
 
         # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
         cmake.definitions['gRPC_INSTALL'] = "ON"
@@ -108,12 +101,8 @@ class grpcConan(ConanFile):
         cmake.definitions['gRPC_PROTOBUF_PROVIDER'] = "package"
 
         # Workaround for https://github.com/grpc/grpc/issues/11068
-        if self.options.build_tests:
-            cmake.definitions['gRPC_GFLAGS_PROVIDER'] = "package"
-            cmake.definitions['gRPC_BENCHMARK_PROVIDER'] = "package"
-        else:
-            cmake.definitions['gRPC_GFLAGS_PROVIDER'] = "none"
-            cmake.definitions['gRPC_BENCHMARK_PROVIDER'] = "none"
+        cmake.definitions['gRPC_GFLAGS_PROVIDER'] = "none"
+        cmake.definitions['gRPC_BENCHMARK_PROVIDER'] = "none"
 
         # Compilation on minGW GCC requires to set _WIN32_WINNTT to at least 0x600
         # https://github.com/grpc/grpc/blob/109c570727c3089fef655edcdd0dd02cc5958010/include/grpc/impl/codegen/port_platform.h#L44
