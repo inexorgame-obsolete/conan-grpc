@@ -49,9 +49,10 @@ class grpcConan(ConanFile):
                 raise ConanInvalidConfiguration("gRPC can only be built with Visual Studio 2015 or higher.")
 
     def source(self):
-        archive_url = "https://github.com/grpc/grpc/archive/v{}.zip".format(self.version)
-        tools.get(archive_url, sha256="5c00f09f7b0517a9ccbd6f0de356b1be915bc7baad2d2189adf8ce803e00af12")
-        os.rename("grpc-{!s}".format(self.version), self._source_subfolder)
+        sha256 = "5c00f09f7b0517a9ccbd6f0de356b1be915bc7baad2d2189adf8ce803e00af12"
+        tools.get("{}/archive/v{}.zip".format(self.homepage, self.version), sha256=sha256)
+        extracted_dir = self.name + "-" + self.version
+        os.rename(extracted_dir, self._source_subfolder)
 
         # cmake_name = "{}/CMakeLists.txt".format(self._source_subfolder)
 
