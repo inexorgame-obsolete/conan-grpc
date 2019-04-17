@@ -54,7 +54,10 @@ class grpcConan(ConanFile):
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
-        # cmake_name = "{}/CMakeLists.txt".format(self._source_subfolder)
+        cmake_path = os.path.join(self._source_subfolder, "CMakeLists.txt")
+
+        # See #5
+        tools.replace_in_file(cmake_path, "_gRPC_PROTOBUF_LIBRARIES", "CONAN_LIBS_PROTOBUF")
 
         # Parts which should be options:
         # grpc_cronet
