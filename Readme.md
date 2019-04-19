@@ -52,7 +52,6 @@ The following command both runs all the steps of the conan file, and publishes t
 | fPIC      | True |  [True, False] |
 | build_codegen      | True |  [True, False] |
 | build_csharp_ext      | False |  [True, False] |
-| build_tests      | False |  [True, False] |
 
 
 ## Add Remote
