@@ -5,7 +5,7 @@ import os
 
 class grpcConan(ConanFile):
     name = "grpc"
-    version = "1.20.0"
+    version = "1.20.1"
     description = "Google's RPC library and framework."
     topics = ("conan", "grpc", "rpc")
     url = "https://github.com/inexorgame/conan-grpc"
@@ -38,7 +38,7 @@ class grpcConan(ConanFile):
         "OpenSSL/1.0.2r@conan/stable",
         "protobuf/3.6.1@bincrafters/stable",
         "protoc_installer/3.6.1@bincrafters/stable",
-        "c-ares/1.14.0@conan/stable"  # update to 1.15.0 when available
+        "c-ares/1.15.0@conan/stable"
     )
 
     def configure(self):
@@ -49,7 +49,7 @@ class grpcConan(ConanFile):
                 raise ConanInvalidConfiguration("gRPC can only be built with Visual Studio 2015 or higher.")
 
     def source(self):
-        sha256 = "5c00f09f7b0517a9ccbd6f0de356b1be915bc7baad2d2189adf8ce803e00af12"
+        sha256 = "e1c0cee239b19069ba73657cbc20749eab18ffab0840eab51df82ac51d9a1aeb"
         tools.get("{}/archive/v{}.zip".format(self.homepage, self.version), sha256=sha256)
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
