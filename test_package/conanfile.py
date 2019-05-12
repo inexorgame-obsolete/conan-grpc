@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, CMake
+from conans import ConanFile, CMake, tools
 import os
 
 
@@ -18,5 +18,6 @@ class TestPackageConan(ConanFile):
         self.copy("*", "bin", "bin")
 
     def test(self):
-        bin_path = os.path.join(".", "bin", "greeter_client")
-        self.run(bin_path, run_environment=True)
+        if not tools.cross_building(self.settings):
+            bin_path = os.path.join(".", "bin", "greeter_client")
+            self.run(bin_path, run_environment=True)
