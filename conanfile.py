@@ -35,13 +35,16 @@ class grpcConan(ConanFile):
 
     requires = (
         "zlib/1.2.11@conan/stable",
-        "OpenSSL/1.1.1b@conan/stable",
+        "OpenSSL/1.1.1c@conan/stable",
         "protobuf/3.6.1@bincrafters/stable",
         "protoc_installer/3.6.1@bincrafters/stable",
-        "c-ares/1.14.0@conan/stable"  # update to 1.15.0 when available
+        "c-ares/1.15.0@conan/stable"
     )
 
     def configure(self):
+        if self.settings.os == "Windows":
+            self.options["OpenSSL"].capieng_dialog = True
+
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             del self.options.fPIC
             compiler_version = int(str(self.settings.compiler.version))
