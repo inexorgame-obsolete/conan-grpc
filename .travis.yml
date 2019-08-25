@@ -8,6 +8,11 @@ linux: &linux
 osx: &osx
    os: osx
    language: generic
+
+env:
+  global:
+    CONAN_BUILD_POLICY="missing"  # remove when protobuf installer issue in CI is fixed
+
 matrix:
    include:
       - <<: *linux
