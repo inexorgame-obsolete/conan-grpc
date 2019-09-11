@@ -34,8 +34,8 @@ class grpcConan(ConanFile):
     _build_subfolder = "build_subfolder"
 
     requires = (
-        "zlib/1.2.11@conan/stable",
-        "OpenSSL/1.0.2s@conan/stable",
+        "zlib/1.2.11",
+        "openssl/1.0.2s",
         "protobuf/3.9.1@bincrafters/stable",
         "protoc_installer/3.9.1@bincrafters/stable",
         "c-ares/1.15.0@conan/stable"
