@@ -1,0 +1,106 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5ee805b485..100323ee45 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -192,12 +192,8 @@ function(protobuf_generate_grpc_cpp)
+     get_filename_component(REL_DIR ${REL_FIL} DIRECTORY)
+     set(RELFIL_WE "${REL_DIR}/${FIL_WE}")
+ 
+-    #if cross-compiling, find host plugin
+-    if(CMAKE_CROSSCOMPILING)
+-        find_program(_gRPC_CPP_PLUGIN grpc_cpp_plugin)
+-    else()
+-        set(_gRPC_CPP_PLUGIN $<TARGET_FILE:grpc_cpp_plugin>)
+-    endif()
++    #TODO get target from conanbuildinfo.cmake
++    find_program(_gRPC_CPP_PLUGIN grpc_cpp_plugin)
+ 
+     add_custom_command(
+       OUTPUT "${_gRPC_PROTO_GENS_DIR}/${RELFIL_WE}.grpc.pb.cc"
+@@ -211,7 +207,7 @@ function(protobuf_generate_grpc_cpp)
+            --plugin=protoc-gen-grpc=${_gRPC_CPP_PLUGIN}
+            ${_protobuf_include_path}
+            ${REL_FIL}
+-      DEPENDS ${ABS_FIL} ${_gRPC_PROTOBUF_PROTOC} grpc_cpp_plugin
++      DEPENDS ${ABS_FIL} ${_gRPC_PROTOBUF_PROTOC} ${_gRPC_CPP_PLUGIN} #TODO add GRPC_INSTALLER dependency
+       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+       COMMENT "Running gRPC C++ protocol buffer compiler on ${FIL}"
+       VERBATIM)
+@@ -3477,7 +3473,6 @@ endif (gRPC_BUILD_CODEGEN)
+ 
+ endif (gRPC_BUILD_TESTS)
+ 
+-if (gRPC_BUILD_CODEGEN)
+ add_library(grpc++_error_details
+   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.cc
+   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.cc
+@@ -3532,9 +3527,6 @@ foreach(_hdr
+     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
+   )
+ endforeach()
+-endif (gRPC_BUILD_CODEGEN)
+-
+-if (gRPC_BUILD_CODEGEN)
+ 
+ if (gRPC_INSTALL)
+   install(TARGETS grpc++_error_details EXPORT gRPCTargets
+@@ -3544,7 +3536,6 @@ if (gRPC_INSTALL)
+   )
+ endif()
+ 
+-endif (gRPC_BUILD_CODEGEN)
+ if (gRPC_BUILD_TESTS)
+ 
+ if (gRPC_BUILD_CODEGEN)
+@@ -3610,7 +3601,6 @@ endif (gRPC_BUILD_CODEGEN)
+ 
+ endif (gRPC_BUILD_TESTS)
+ 
+-if (gRPC_BUILD_CODEGEN)
+ add_library(grpc++_reflection
+   src/cpp/ext/proto_server_reflection.cc
+   src/cpp/ext/proto_server_reflection_plugin.cc
+@@ -3666,9 +3656,6 @@ foreach(_hdr
+     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
+   )
+ endforeach()
+-endif (gRPC_BUILD_CODEGEN)
+-
+-if (gRPC_BUILD_CODEGEN)
+ 
+ if (gRPC_INSTALL)
+   install(TARGETS grpc++_reflection EXPORT gRPCTargets
+@@ -3678,7 +3665,6 @@ if (gRPC_INSTALL)
+   )
+ endif()
+ 
+-endif (gRPC_BUILD_CODEGEN)
+ if (gRPC_BUILD_TESTS)
+ 
+ add_library(grpc++_test_config
+@@ -4674,7 +4660,6 @@ if (gRPC_INSTALL)
+ endif()
+ 
+ 
+-if (gRPC_BUILD_CODEGEN)
+ add_library(grpcpp_channelz
+   src/cpp/server/channelz/channelz_service.cc
+   src/cpp/server/channelz/channelz_service_plugin.cc
+@@ -4729,9 +4714,6 @@ foreach(_hdr
+     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
+   )
+ endforeach()
+-endif (gRPC_BUILD_CODEGEN)
+-
+-if (gRPC_BUILD_CODEGEN)
+ 
+ if (gRPC_INSTALL)
+   install(TARGETS grpcpp_channelz EXPORT gRPCTargets
+@@ -4741,7 +4723,6 @@ if (gRPC_INSTALL)
+   )
+ endif()
+ 
+-endif (gRPC_BUILD_CODEGEN)
+ if (gRPC_BUILD_TESTS)
+ 
+ if (gRPC_BUILD_CODEGEN)
