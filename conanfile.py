@@ -1,45 +1,35 @@
-from conans import ConanFile, CMake, tools
+#!/usr/bin/env python
+from conans import tools,CMake
+from conanfile_base import ConanFileBase
 from conans.errors import ConanInvalidConfiguration
 import os
 
-
-class grpcConan(ConanFile):
-    name = "grpc"
-    version = "1.23.0"
-    description = "Google's RPC library and framework."
-    topics = ("conan", "grpc", "rpc")
-    url = "https://github.com/inexorgame/conan-grpc"
-    homepage = "https://github.com/grpc/grpc"
-    author = "Bincrafters <bincrafters@gmail.com>"
-    license = "Apache-2.0"
-    exports = ["LICENSE.md"]
-    exports_sources = ["CMakeLists.txt"]
-    generators = "cmake"
-    short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
-
-    settings = "os", "arch", "compiler", "build_type"
+class grpcConan(ConanFileBase):
+    settings="os","arch","compiler","build_type"
+    name ="grpc"
+    version=ConanFileBase.version
+    protobuf_version=ConanFileBase.protobuf_version
+    exports = ConanFileBase.exports + ["grpc.patch"]
     options = {
         # "shared": [True, False],
         "fPIC": [True, False],
-        "build_codegen": [True, False],
         "build_csharp_ext": [True, False]
     }
     default_options = {
         "fPIC": True,
-        "build_codegen": True,
         "build_csharp_ext": False
     }
 
-    _source_subfolder = "source_subfolder"
-    _build_subfolder = "build_subfolder"
-
     requires = (
-        "zlib/1.2.11@conan/stable",
-        "OpenSSL/1.0.2s@conan/stable",
-        "protobuf/3.9.1@bincrafters/stable",
-        "protoc_installer/3.9.1@bincrafters/stable",
-        "c-ares/1.15.0@conan/stable"
+        "zlib/1.2.11",
+        "openssl/1.0.2s",
+        "protobuf/{}@bincrafters/stable".format(ConanFileBase.protobuf_version),
+        "protoc_installer/{}@bincrafters/stable".format(ConanFileBase.protobuf_version),
+        "c-ares/1.15.0@conan/stable",
     )
+
+    def requirements(self):
+        self.requires.add("grpc_installer/{}@{}/{}".format(self.version,self.user,self.channel))
 
     def configure(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
@@ -51,11 +41,10 @@ class grpcConan(ConanFile):
     def source(self):
         sha256 = "86d7552cb79ab9ba7243d86b768952df1907bacb828f5f53b8a740f716f3937b"
         tools.get("{}/archive/v{}.zip".format(self.homepage, self.version), sha256=sha256)
-        extracted_dir = self.name + "-" + self.version
+        extracted_dir = "grpc-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
         cmake_path = os.path.join(self._source_subfolder, "CMakeLists.txt")
-
         # See #5
         tools.replace_in_file(cmake_path, "_gRPC_PROTOBUF_LIBRARIES", "CONAN_LIBS_PROTOBUF")
 
@@ -89,8 +78,8 @@ class grpcConan(ConanFile):
         #
         # cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON" if self.options.build_csharp_ext else "OFF"
 
-
-        cmake.definitions['gRPC_BUILD_CODEGEN'] = "ON" if self.options.build_codegen else "OFF"
+        #But we have patched cmake to generate libraries anyways but not the tooling
+        cmake.definitions['gRPC_BUILD_CODEGEN'] = "OFF" #we are still doing it sort of #if self.options.build_codegen else "OFF"
         cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON" if self.options.build_csharp_ext else "OFF"
         cmake.definitions['gRPC_BUILD_TESTS'] = "OFF"
 
@@ -118,6 +107,8 @@ class grpcConan(ConanFile):
         return cmake
 
     def build(self):
+        #patch to allow us to cross compile allways but never build the generator tools
+        tools.patch(base_path=self._source_subfolder, patch_file="grpc.patch")
         cmake = self._configure_cmake()
         cmake.build()
 
@@ -128,19 +119,23 @@ class grpcConan(ConanFile):
         self.copy(pattern="LICENSE", dst="licenses")
         self.copy('*', dst='include', src='{}/include'.format(self._source_subfolder))
         self.copy('*.cmake', dst='lib', src='{}/lib'.format(self._build_subfolder), keep_path=True)
+
         self.copy("*.lib", dst="lib", src="", keep_path=False)
         self.copy("*.a", dst="lib", src="", keep_path=False)
-        self.copy("*", dst="bin", src="bin")
         self.copy("*.dll", dst="bin", keep_path=False)
         self.copy("*.so", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
         self.cpp_info.libs = [
-            "grpc++",
-            "grpc",
             "grpc++_unsecure",
+            "grpc++_reflection",
+            "grpc++_error_details",
+            "grpc++",
             "grpc_unsecure",
+            "grpc_plugin_support",
+            "grpc_cronet",
+            "grpcpp_channelz",
+            "grpc",
             "gpr",
             "address_sorting"
         ]
