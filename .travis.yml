@@ -19,9 +19,6 @@ matrix:
    include:
       - stage: installer
         <<: *linux
-        env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7-x86 CONAN_ARCHS=x86 ARCH=x86 CPT_TEST_FOLDER=test_package_installer CONAN_CONANFILE=conanfile_installer.py
-      - stage: installer
-        <<: *linux
         env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7 CONAN_ARCHS=x86_64 ARCH=x86_64 CPT_TEST_FOLDER=test_package_installer CONAN_CONANFILE=conanfile_installer.py
       - stage: installer
         <<: *osx
@@ -29,80 +26,40 @@ matrix:
         env: CONAN_APPLE_CLANG_VERSIONS=11.0 CONAN_ARCHS=x86_64 ARCH=x86_64 CPT_TEST_FOLDER=test_package_installer CONAN_CONANFILE=conanfile_installer.py
       - stage: default
         <<: *linux
-        env: CONAN_GCC_VERSIONS=4.9 CONAN_DOCKER_IMAGE=conanio/gcc49-x86 CONAN_ARCHS=x86
-      - stage: default
-        <<: *linux
         env: CONAN_GCC_VERSIONS=4.9 CONAN_DOCKER_IMAGE=conanio/gcc49 CONAN_ARCHS=x86_64
-      - stage: default
-        <<: *linux
-        env: CONAN_GCC_VERSIONS=5 CONAN_DOCKER_IMAGE=conanio/gcc5-x86 CONAN_ARCHS=x86
       - stage: default
         <<: *linux
         env: CONAN_GCC_VERSIONS=5 CONAN_DOCKER_IMAGE=conanio/gcc5 CONAN_ARCHS=x86_64
       - stage: default
         <<: *linux
-        env: CONAN_GCC_VERSIONS=6 CONAN_DOCKER_IMAGE=conanio/gcc6-x86 CONAN_ARCHS=x86
-      - stage: default
-        <<: *linux
         env: CONAN_GCC_VERSIONS=6 CONAN_DOCKER_IMAGE=conanio/gcc6 CONAN_ARCHS=x86_64
-      - stage: default
-        <<: *linux
-        env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7-x86 CONAN_ARCHS=x86
       - stage: default
         <<: *linux
         env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7 CONAN_ARCHS=x86_64
       - stage: default
         <<: *linux
-        env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8-x86 CONAN_ARCHS=x86
-      - stage: default
-        <<: *linux
         env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8 CONAN_ARCHS=x86_64
-      - stage: default
-        <<: *linux
-        env: CONAN_GCC_VERSIONS=9 CONAN_DOCKER_IMAGE=conanio/gcc9-x86 CONAN_ARCHS=x86
       - stage: default
         <<: *linux
         env: CONAN_GCC_VERSIONS=9 CONAN_DOCKER_IMAGE=conanio/gcc9 CONAN_ARCHS=x86_64
       - stage: default
         <<: *linux
-        env: CONAN_CLANG_VERSIONS=3.9 CONAN_DOCKER_IMAGE=conanio/clang39-x86 CONAN_ARCHS=x86
-      - stage: default
-        <<: *linux
         env: CONAN_CLANG_VERSIONS=3.9 CONAN_DOCKER_IMAGE=conanio/clang39 CONAN_ARCHS=x86_64
-      - stage: default
-        <<: *linux
-        env: CONAN_CLANG_VERSIONS=4.0 CONAN_DOCKER_IMAGE=conanio/clang40-x86 CONAN_ARCHS=x86
       - stage: default
         <<: *linux
         env: CONAN_CLANG_VERSIONS=4.0 CONAN_DOCKER_IMAGE=conanio/clang40 CONAN_ARCHS=x86_64
       - stage: default
         <<: *linux
-        env: CONAN_CLANG_VERSIONS=5.0 CONAN_DOCKER_IMAGE=conanio/clang50-x86 CONAN_ARCHS=x86
-      - stage: default
-        <<: *linux
         env: CONAN_CLANG_VERSIONS=5.0 CONAN_DOCKER_IMAGE=conanio/clang50 CONAN_ARCHS=x86_64
-      - stage: default
-        <<: *linux
-        env: CONAN_CLANG_VERSIONS=6.0 CONAN_DOCKER_IMAGE=conanio/clang60-x86 CONAN_ARCHS=x86
       - stage: default
         <<: *linux
         env: CONAN_CLANG_VERSIONS=6.0 CONAN_DOCKER_IMAGE=conanio/clang60 CONAN_ARCHS=x86_64
       - stage: default
         <<: *linux
-        env: CONAN_CLANG_VERSIONS=7.0 CONAN_DOCKER_IMAGE=conanio/clang7-x86 CONAN_ARCHS=x86
-      - stage: default
-        <<: *linux
         env: CONAN_CLANG_VERSIONS=7.0 CONAN_DOCKER_IMAGE=conanio/clang7 CONAN_ARCHS=x86_64
       - stage: default
         <<: *linux
-        env: CONAN_CLANG_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/clang8-x86 CONAN_ARCHS=x86
-      - stage: default
-        <<: *linux
         env: CONAN_CLANG_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/clang8 CONAN_ARCHS=x86_64
-      - stage: default
-        <<: *osx
-        osx_image: xcode8.3
-        env: CONAN_APPLE_CLANG_VERSIONS=8.1
       - stage: default
         <<: *osx
         osx_image: xcode9
