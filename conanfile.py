@@ -10,9 +10,7 @@ class grpcConan(ConanFile):
     topics = ("conan", "grpc", "rpc")
     url = "https://github.com/inexorgame/conan-grpc"
     homepage = "https://github.com/grpc/grpc"
-    author = "Bincrafters <bincrafters@gmail.com>"
     license = "Apache-2.0"
-    exports = ["LICENSE.md"]
     exports_sources = ["CMakeLists.txt"]
     generators = "cmake"
     short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
@@ -49,8 +47,7 @@ class grpcConan(ConanFile):
                 raise ConanInvalidConfiguration("gRPC can only be built with Visual Studio 2015 or higher.")
 
     def source(self):
-        sha256 = "82de7c3754df7be44c65fd00decd5e2351ea64e4d21fdaf6d76cea5676f954e8"
-        tools.get("{}/archive/v{}.zip".format(self.homepage, self.version), sha256=sha256)
+        tools.get(**self.conan_data["sources"][self.version])
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
