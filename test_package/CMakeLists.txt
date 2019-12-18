@@ -51,16 +51,18 @@ add_custom_command(
         "${hw_proto}"
       DEPENDS "${hw_proto}")
 
+# Build generated sources as an object library
+add_library(hw_proto_obj OBJECT ${hw_proto_srcs} ${hw_grpc_srcs})
+
 # Include generated *.pb.h files
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # Targets greeter_[async_](client)
 foreach(_target
-  greeter_client)
-# greeter_server greeter_async_client greeter_async_server)
+  greeter_client_server)
+# greeter_async_client greeter_async_server)
   add_executable(${_target} "${_target}.cc"
-    ${hw_proto_srcs}
-    ${hw_grpc_srcs})
+    $<TARGET_OBJECTS:hw_proto_obj>)
   target_link_libraries(${_target}
     ${_GRPC_GRPCPP_UNSECURE}
     ${_PROTOBUF_LIBPROTOBUF})
