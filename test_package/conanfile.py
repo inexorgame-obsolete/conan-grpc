@@ -3,6 +3,8 @@
 
 from conans import ConanFile, CMake, tools
 import os
+import threading
+import time
 
 
 class TestPackageConan(ConanFile):
@@ -19,5 +21,5 @@ class TestPackageConan(ConanFile):
 
     def test(self):
         if not tools.cross_building(self.settings):
-            bin_path = os.path.join(".", "bin", "greeter_client")
+            bin_path = os.path.join(".", "bin", "greeter_client_server")
             self.run(bin_path, run_environment=True)
