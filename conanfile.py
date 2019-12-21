@@ -142,4 +142,4 @@ class grpcConan(ConanFile):
             "address_sorting"
         ]
         if self.settings.compiler == "Visual Studio":
-            self.cpp_info.libs += ["wsock32", "ws2_32"]
+            self.cpp_info.system_libs += ["wsock32", "ws2_32"]
