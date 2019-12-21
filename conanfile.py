@@ -101,10 +101,6 @@ class grpcConan(ConanFile):
         cmake.definitions['gRPC_SSL_PROVIDER'] = "package"
         cmake.definitions['gRPC_PROTOBUF_PROVIDER'] = "package"
 
-        # Workaround for https://github.com/grpc/grpc/issues/11068
-        cmake.definitions['gRPC_GFLAGS_PROVIDER'] = "none"
-        cmake.definitions['gRPC_BENCHMARK_PROVIDER'] = "none"
-
         # Compilation on minGW GCC requires to set _WIN32_WINNTT to at least 0x600
         # https://github.com/grpc/grpc/blob/109c570727c3089fef655edcdd0dd02cc5958010/include/grpc/impl/codegen/port_platform.h#L44
         if self.settings.os == "Windows" and self.settings.compiler == "gcc":
