@@ -137,7 +137,14 @@ class grpcConan(ConanFile):
             "grpc++",
             "grpc",
             "grpc++_unsecure",
+            "grpc++_reflection",
+            "grpc++_error_details",
+            "grpc++",
             "grpc_unsecure",
+            "grpc_plugin_support",
+            "grpc_cronet",
+            "grpcpp_channelz",
+            "grpc",
             "gpr",
             "address_sorting"
         ]
