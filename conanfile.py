@@ -12,8 +12,8 @@ class grpcConan(ConanFile):
     homepage = "https://github.com/grpc/grpc"
     license = "Apache-2.0"
     exports_sources = ["CMakeLists.txt"]
-    generators = "cmake"
-    short_paths = True  # Otherwise some folders go out of the 260 chars path length scope rapidly (on windows)
+    generators = "cmake", "cmake_find_package_multi"
+    short_paths = True
 
     settings = "os", "arch", "compiler", "build_type"
     options = {
@@ -36,7 +36,7 @@ class grpcConan(ConanFile):
         "openssl/1.0.2t",
         "protobuf/3.9.1@bincrafters/stable",
         "protoc_installer/3.9.1@bincrafters/stable",
-        "c-ares/1.15.0@conan/stable"
+        "c-ares/1.15.0"
     )
 
     def configure(self):
@@ -55,6 +55,10 @@ class grpcConan(ConanFile):
 
         # See #5
         tools.replace_in_file(cmake_path, "_gRPC_PROTOBUF_LIBRARIES", "CONAN_LIBS_PROTOBUF")
+
+        # cmake_find_package_multi is producing a c-ares::c-ares target, grpc is looking for c-ares::cares
+        tools.replace_in_file(
+            os.path.join(self._source_subfolder, "cmake", "cares.cmake"), "c-ares::cares", "c-ares::c-ares")
 
         # Parts which should be options:
         # grpc_cronet
