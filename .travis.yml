@@ -5,9 +5,7 @@ linux: &linux
    python: "3.7"
    services:
      - docker
-osx: &osx
-   os: osx
-   language: generic
+
 matrix:
    include:
       - stage: default
