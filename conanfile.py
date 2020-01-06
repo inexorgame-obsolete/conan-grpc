@@ -33,7 +33,7 @@ class grpcConan(ConanFile):
 
     requires = (
         "zlib/1.2.11",
-        "openssl/1.0.2t",
+        "openssl/1.1.1d",
         "protobuf/3.9.1@bincrafters/stable",
         "protoc_installer/3.9.1@bincrafters/stable",
         "c-ares/1.15.0"
@@ -55,6 +55,10 @@ class grpcConan(ConanFile):
 
         # See #5
         tools.replace_in_file(cmake_path, "_gRPC_PROTOBUF_LIBRARIES", "CONAN_LIBS_PROTOBUF")
+
+        # See https://github.com/grpc/grpc/issues/21293 - OpenSSL 1.1.1+ doesn't work without
+        tools.replace_in_file(
+            cmake_path, "set(_gRPC_BASELIB_LIBRARIES wsock32 ws2_32)", "set(_gRPC_BASELIB_LIBRARIES wsock32 ws2_32 crypt32)")
 
         # cmake_find_package_multi is producing a c-ares::c-ares target, grpc is looking for c-ares::cares
         tools.replace_in_file(
