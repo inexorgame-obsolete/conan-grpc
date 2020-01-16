@@ -17,12 +17,13 @@ class grpcConan(ConanFile):
 
     settings = "os", "arch", "compiler", "build_type"
     options = {
-        # "shared": [True, False],
+        "shared": [True, False],
         "fPIC": [True, False],
         "build_codegen": [True, False],
         "build_csharp_ext": [True, False]
     }
     default_options = {
+        "shared": False,
         "fPIC": True,
         "build_codegen": True,
         "build_csharp_ext": False
