@@ -148,7 +148,8 @@ class grpcConan(ConanFile):
             "grpc_cronet",
             "grpcpp_channelz",
             "gpr",
-            "address_sorting"
+            "address_sorting",
+            "upb",
         ]
         if self.settings.compiler == "Visual Studio":
             self.cpp_info.system_libs += ["wsock32", "ws2_32"]
