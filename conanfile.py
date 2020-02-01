@@ -55,6 +55,7 @@ class grpcConan(ConanFile):
 
         # See #5
         tools.replace_in_file(cmake_path, "_gRPC_PROTOBUF_LIBRARIES", "CONAN_LIBS_PROTOBUF")
+        tools.patch(base_path=self._source_subfolder, patch_file="001-fix-mingw-linking.patch")
 
         # Parts which should be options:
         # grpc_cronet
