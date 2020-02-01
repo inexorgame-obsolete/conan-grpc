@@ -17,7 +17,7 @@ class grpcConan(ConanFile):
 
     settings = "os", "arch", "compiler", "build_type"
     options = {
-        # "shared": [True, False],
+        "shared": [True, False],
         "fPIC": [True, False],
         "build_codegen": [True, False],
         "build_csharp_ext": [True, False]
@@ -117,7 +117,18 @@ class grpcConan(ConanFile):
 
     def build(self):
         cmake = self._configure_cmake()
-        cmake.build()
+        if self.settings.os == "Windows" and self.settings.compiler == "gcc":
+            # This is required because grpc build runs some executables that
+            # depend on zlib and protobuf dlls so the bin path of the packages
+            # need to be in the PATH variable
+            path = os.environ["PATH"]
+            for dep in ["protobuf", "zlib"]:
+                for binpath in self.deps_cpp_info[dep].bin_paths:
+                    path = binpath + os.pathsep + path
+            with tools.environment_append({"PATH": path}):
+                cmake.build()
+        else:
+            cmake.build()
 
     def package(self):
         cmake = self._configure_cmake()
