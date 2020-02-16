@@ -144,6 +144,7 @@ class grpcConan(ConanFile):
             "grpc++",
             "grpc_unsecure",
             "grpc_plugin_support",
+            "grpc_cpp_plugin",
             "grpc_cronet",
             "grpcpp_channelz",
             "grpc",
