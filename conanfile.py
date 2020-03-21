@@ -115,6 +115,9 @@ class grpcConan(ConanFile):
             cmake.definitions["CMAKE_CXX_FLAGS"] = "-D_WIN32_WINNT=0x600"
             cmake.definitions["CMAKE_C_FLAGS"] = "-D_WIN32_WINNT=0x600"
 
+        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio" and not self.options["protobuf"].shared:
+            cmake.definitions["Protobuf_USE_STATIC_LIBS"] = "ON"
+
         cmake.configure(build_folder=self._build_subfolder)
         return cmake
 
