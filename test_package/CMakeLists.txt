@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 project(test_package)
 
-set(CMAKE_VERBOSE_MAKEFILE TRUE)
-
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
@@ -13,6 +11,9 @@ set(CMAKE_CXX_STANDARD 11)
 
 # This branch assumes that gRPC and all its dependencies are already installed
 # on this system, so they can be located by find_package().
+
+# Workaround until https://github.com/conan-io/conan-center-index/issues/1697 is fixed
+find_package(absl REQUIRED CONFIG)
 
 # Find Protobuf installation
 # Looks for protobuf-config.cmake file installed by Protobuf's cmake installation.
