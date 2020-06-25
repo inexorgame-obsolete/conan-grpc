@@ -63,11 +63,6 @@ class grpcConan(ConanFile):
         tools.replace_in_file(cmake_path, "absl::optional", "absl::absl")
         tools.replace_in_file(cmake_path, "absl::inlined_vector", "absl::absl")
 
-
-        # cmake_find_package_multi is producing a c-ares::c-ares target, grpc is looking for c-ares::cares
-        tools.replace_in_file(
-            os.path.join(self._source_subfolder, "cmake", "cares.cmake"), "c-ares::cares", "c-ares::c-ares")
-
         # Parts which should be options:
         # grpc_cronet
         # grpc++_cronet
