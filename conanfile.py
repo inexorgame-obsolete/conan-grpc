@@ -122,18 +122,14 @@ class grpcConan(ConanFile):
         cmake.build()
 
     def package(self):
+        self.copy(pattern="LICENSE", dst="licenses", src=self._source_subfolder)
         cmake = self._configure_cmake()
         cmake.install()
 
-        self.copy(pattern="LICENSE", dst="licenses")
-        self.copy('*', dst='include', src='{}/include'.format(self._source_subfolder))
-        self.copy('*.cmake', dst='lib', src='{}/lib'.format(self._build_subfolder), keep_path=True)
-        self.copy("*.lib", dst="lib", src="", keep_path=False)
-        self.copy("*.a", dst="lib", src="", keep_path=False)
-        self.copy("*", dst="bin", src="bin")
-        self.copy("*.dll", dst="bin", keep_path=False)
-        self.copy("*.so", dst="lib", keep_path=False)
-
+        tools.rmdir(os.path.join(self.package_folder, "lib", "cmake"))
+        tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
+        tools.rmdir(os.path.join(self.package_folder, "share"))
+    
     def package_info(self):
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
         self.cpp_info.libs = [
