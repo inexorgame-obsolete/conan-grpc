@@ -63,10 +63,6 @@ class grpcConan(ConanFile):
         tools.replace_in_file(cmake_path, "absl::optional", "absl::absl")
         tools.replace_in_file(cmake_path, "absl::inlined_vector", "absl::absl")
 
-        if Version(self.version) < "1.27.0":
-            # See https://github.com/grpc/grpc/issues/21293 - OpenSSL 1.1.1+ doesn't work without
-            tools.replace_in_file(
-                cmake_path, "set(_gRPC_BASELIB_LIBRARIES wsock32 ws2_32)", "set(_gRPC_BASELIB_LIBRARIES wsock32 ws2_32 crypt32)")
 
         # cmake_find_package_multi is producing a c-ares::c-ares target, grpc is looking for c-ares::cares
         tools.replace_in_file(
