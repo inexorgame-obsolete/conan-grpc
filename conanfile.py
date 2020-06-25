@@ -132,6 +132,10 @@ class grpcConan(ConanFile):
     
     def package_info(self):
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
+
+        self.cpp_info.names["cmake_find_package"] = "gRPC"
+        self.cpp_info.names["cmake_find_package_multi"] = "gRPC"
+
         self.cpp_info.libs = [
             "grpc++_unsecure",
             "grpc++_reflection",
