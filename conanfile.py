@@ -35,8 +35,7 @@ class grpcConan(ConanFile):
     requires = (
         "zlib/1.2.11",
         "openssl/1.1.1g",
-        "protobuf/3.9.1@bincrafters/stable",
-        "protoc_installer/3.9.1@bincrafters/stable",
+        "protobuf/3.11.4",
         "c-ares/1.15.0",
         "abseil/20200225.2",
     )
