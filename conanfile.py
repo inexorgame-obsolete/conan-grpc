@@ -59,9 +59,14 @@ class grpcConan(ConanFile):
         tools.replace_in_file(cmake_path, "_gRPC_PROTOBUF_LIBRARIES", "CONAN_LIBS_PROTOBUF")
 
         # Workaround until https://github.com/conan-io/conan-center-index/issues/1697 is fixed
-        tools.replace_in_file(cmake_path, "absl::strings", "absl::absl")
-        tools.replace_in_file(cmake_path, "absl::optional", "absl::absl")
-        tools.replace_in_file(cmake_path, "absl::inlined_vector", "absl::absl")
+        if Version(self.version) > "1.27.0":
+            tools.replace_in_file(cmake_path, "absl::strings", "absl::absl")
+            tools.replace_in_file(cmake_path, "absl::optional", "absl::absl")
+            tools.replace_in_file(cmake_path, "absl::inlined_vector", "absl::absl")
+        if Version(self.version) > "1.29.0":
+            tools.replace_in_file(cmake_path, "absl::time", "absl::absl")
+            tools.replace_in_file(cmake_path, "absl::str_format", "absl::absl")
+            tools.replace_in_file(cmake_path, "absl::memory", "absl::absl")
 
         # Parts which should be options:
         # grpc_cronet
