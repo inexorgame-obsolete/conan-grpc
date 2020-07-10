@@ -108,6 +108,7 @@ class grpcConan(ConanFile):
         # cmake.definitions['CMAKE_INSTALL_PREFIX'] = self._build_subfolder
 
         # tell grpc to use the find_package versions
+        cmake.definitions['gRPC_ABSL_PROVIDER'] = "package"
         cmake.definitions['gRPC_CARES_PROVIDER'] = "package"
         cmake.definitions['gRPC_ZLIB_PROVIDER'] = "package"
         cmake.definitions['gRPC_SSL_PROVIDER'] = "package"
