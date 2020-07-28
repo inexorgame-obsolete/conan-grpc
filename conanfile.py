@@ -158,73 +158,73 @@ class grpcConan(ConanFile):
         _gRPC_LIBRARY_PREFIX = ""
 
         if self.settings.os == "Linux":
-            _gRPC_ALLTARGETS_LIBRARIES += ["dl", "rt", "m", "pthread"]
+            _gRPC_ALLTARGETS_LIBRARIES.extend(["dl", "rt", "m", "pthread"])
             _gRPC_LIBRARY_PREFIX = "lib"
         if tools.is_apple_os(self.settings.os):
-            _gRPC_ALLTARGETS_LIBRARIES += ["m", "pthread"]
+            _gRPC_ALLTARGETS_LIBRARIES.extend(["m", "pthread"])
         if self.settings.os == "Android":
-            _gRPC_ALLTARGETS_LIBRARIES += ["m"]
+            _gRPC_ALLTARGETS_LIBRARIES.extend(["m"])
         if self.settings.os == "Windows":
-            _gRPC_BASELIB_LIBRARIES += ["wsock32", "ws2_32", "crypt32"]
+            _gRPC_BASELIB_LIBRARIES.extend(["wsock32", "ws2_32", "crypt32"])
 
 
         self.cpp_info.components["upb"].libs = [_gRPC_LIBRARY_PREFIX + "upb"]
 
         self.cpp_info.components["address_sorting"].libs = [_gRPC_LIBRARY_PREFIX + "address_sorting"]
-        self.cpp_info.components["address_sorting"].system_libs += [_gRPC_BASELIB_LIBRARIES, _gRPC_ALLTARGETS_LIBRARIES]
+        self.cpp_info.components["address_sorting"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
         
         self.cpp_info.components["gpr"].libs = [_gRPC_LIBRARY_PREFIX + "gpr"]
-        self.cpp_info.components["gpr"].system_libs += [_gRPC_ALLTARGETS_LIBRARIES]
+        self.cpp_info.components["gpr"].system_libs = [_gRPC_ALLTARGETS_LIBRARIES]
         if self.settings.os == "Android":
-            self.cpp_info.components["gpr"].system_libs += ["android", "log"]
-        # self.cpp_info.components["gpr"].requires += (["absl::time", "absl::strings", "absl::str_format", "absl::memory"])
-        self.cpp_info.components["gpr"].requires += (["abseil::abseil"])
+            self.cpp_info.components["gpr"].system_libs.extend(["android", "log"])
+        # self.cpp_info.components["gpr"].requires = ["absl::time", "absl::strings", "absl::str_format", "absl::memory"]
+        self.cpp_info.components["gpr"].requires = ["abseil::abseil"]
 
         self.cpp_info.components["gprc_only"].name = "grpc"
         self.cpp_info.components["gprc_only"].libs = [_gRPC_LIBRARY_PREFIX + "gprc"]
-        self.cpp_info.components["grpc_only"].system_libs += [_gRPC_BASELIB_LIBRARIES, _gRPC_ALLTARGETS_LIBRARIES]
+        self.cpp_info.components["grpc_only"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
         if tools.is_apple_os(self.settings.os):
-            self.cpp_info.components["grpc_only"].frameworks += ["CoreFoundation"]
-        # self.cpp_info.components["grpc_only"].requires += (["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "gpr", "address_sorting", "upb", "absl::optional", "absl::string", "absl::inline_vector"])
-        self.cpp_info.components["grpc_only"].requires += (["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "gpr", "address_sorting", "upb", "abseil::abseil"])
+            self.cpp_info.components["grpc_only"].frameworks = ["CoreFoundation"]
+        # self.cpp_info.components["grpc_only"].requires = ["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "gpr", "address_sorting", "upb", "absl::optional", "absl::string", "absl::inline_vector"]
+        self.cpp_info.components["grpc_only"].requires = ["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "gpr", "address_sorting", "upb", "abseil::abseil"]
 
         self.cpp_info.components["gprc_unsecure"].libs = [_gRPC_LIBRARY_PREFIX + "gprc_unsecure"]
-        self.cpp_info.components["gprc_unsecure"].system_libs += [_gRPC_BASELIB_LIBRARIES, _gRPC_ALLTARGETS_LIBRARIES]
+        self.cpp_info.components["gprc_unsecure"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
         if tools.is_apple_os(self.settings.os):
-            self.cpp_info.components["gprc_unsecure"].frameworks += ["CoreFoundation"]
-        # self.cpp_info.components["gprc_unsecure"].requires += (["zlib::zlib", "c-ares::cares", "address_sorting" "upb", "gpr", "absl::optional", "absl::string", "absl::inline_vector"])
-        self.cpp_info.components["gprc_unsecure"].requires += (["zlib::zlib", "c-ares::cares", "address_sorting", "upb", "gpr", "abseil::abseil"])
+            self.cpp_info.components["gprc_unsecure"].frameworks = ["CoreFoundation"]
+        # self.cpp_info.components["gprc_unsecure"].requires = ["zlib::zlib", "c-ares::cares", "address_sorting" "upb", "gpr", "absl::optional", "absl::string", "absl::inline_vector"]
+        self.cpp_info.components["gprc_unsecure"].requires = ["zlib::zlib", "c-ares::cares", "address_sorting", "upb", "gpr", "abseil::abseil"]
 
         self.cpp_info.components["grpc++"].libs = [_gRPC_LIBRARY_PREFIX + "gprc++"]
-        self.cpp_info.components["grpc++"].system_libs += [_gRPC_BASELIB_LIBRARIES, _gRPC_ALLTARGETS_LIBRARIES]
-        self.cpp_info.components["grpc++"].requires += (["openssl::ssl", "openssl::crypto", "protobuf::libprotobuf", "grpc_only", "gpr", "upb"])
+        self.cpp_info.components["grpc++"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
+        self.cpp_info.components["grpc++"].requires = ["openssl::ssl", "openssl::crypto", "protobuf::libprotobuf", "grpc_only", "gpr", "upb"]
 
         self.cpp_info.components["grpc_unsecure"].libs = [_gRPC_LIBRARY_PREFIX + "gprc_unsecure"]
-        self.cpp_info.components["grpc_unsecure"].system_libs += [_gRPC_BASELIB_LIBRARIES, _gRPC_ALLTARGETS_LIBRARIES]
-        self.cpp_info.components["grpc_unsecure"].requires += (["zlib::zlib", "c-ares::cares", "address_sorting", "upb", "gpr"])
+        self.cpp_info.components["grpc_unsecure"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
+        self.cpp_info.components["grpc_unsecure"].requires = ["zlib::zlib", "c-ares::cares", "address_sorting", "upb", "gpr"]
 
         self.cpp_info.components["grpc++_unsecure"].libs = [_gRPC_LIBRARY_PREFIX + "gprc++_unsecure"]
-        self.cpp_info.components["grpc++_unsecure"].system_libs += [_gRPC_BASELIB_LIBRARIES, _gRPC_ALLTARGETS_LIBRARIES]
-        self.cpp_info.components["grpc++_unsecure"].requires += (["protobuf::libprotobuf", "gpr", "grpc_unsecure", "upb"])
+        self.cpp_info.components["grpc++_unsecure"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
+        self.cpp_info.components["grpc++_unsecure"].requires = ["protobuf::libprotobuf", "gpr", "grpc_unsecure", "upb"]
 
         self.cpp_info.components["grpcpp_channelz"].libs = [_gRPC_LIBRARY_PREFIX + "grpcpp_channelz"]
-        self.cpp_info.components["grpcpp_channelz"].system_libs += [_gRPC_ALLTARGETS_LIBRARIES]
-        self.cpp_info.components["grpcpp_channelz"].requires += (["protobuf::libprotobuf", "grpc++", "grpc_only"])
+        self.cpp_info.components["grpcpp_channelz"].system_libs = [_gRPC_ALLTARGETS_LIBRARIES]
+        self.cpp_info.components["grpcpp_channelz"].requires = ["protobuf::libprotobuf", "grpc++", "grpc_only"]
 
         self.cpp_info.components["gprc_cronet"].libs = [_gRPC_LIBRARY_PREFIX + "gprc_cronet"]
-        self.cpp_info.components["gprc_cronet"].system_libs += [_gRPC_BASELIB_LIBRARIES, _gRPC_ALLTARGETS_LIBRARIES]
+        self.cpp_info.components["gprc_cronet"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
         if tools.is_apple_os(self.settings.os):
-            self.cpp_info.components["gprc_cronet"].frameworks += ["CoreFoundation"]
-        self.cpp_info.components["gprc_cronet"].requires += (["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "address_sorting", "upb", "gpr"])
+            self.cpp_info.components["gprc_cronet"].frameworks = ["CoreFoundation"]
+        self.cpp_info.components["gprc_cronet"].requires = ["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "address_sorting", "upb", "gpr"]
 
         self.cpp_info.components["gprc_plugin_support"].libs = [_gRPC_LIBRARY_PREFIX + "gprc_plugin_support"]
-        self.cpp_info.components["gprc_plugin_support"].system_libs += [_gRPC_ALLTARGETS_LIBRARIES]
-        self.cpp_info.components["gprc_plugin_support"].requires += (["protobuf::protoc", "protobuf::libprotobuf"])
+        self.cpp_info.components["gprc_plugin_support"].system_libs = [_gRPC_ALLTARGETS_LIBRARIES]
+        self.cpp_info.components["gprc_plugin_support"].requires = ["protobuf::protoc", "protobuf::libprotobuf"]
 
         self.cpp_info.components["grpc++_error_details"].libs = [_gRPC_LIBRARY_PREFIX + "grpc++_error_details"]
-        self.cpp_info.components["grpc++_error_details"].system_libs += [_gRPC_BASELIB_LIBRARIES, _gRPC_ALLTARGETS_LIBRARIES]
-        self.cpp_info.components["grpc++_error_details"].requires += (["grpc++"])
+        self.cpp_info.components["grpc++_error_details"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
+        self.cpp_info.components["grpc++_error_details"].requires = ["grpc++"]
 
         self.cpp_info.components["grpc++_reflection"].libs = [_gRPC_LIBRARY_PREFIX + "grpc++_reflection"]
-        self.cpp_info.components["grpc++_reflection"].system_libs += [_gRPC_ALLTARGETS_LIBRARIES]
-        self.cpp_info.components["grpc++_reflection"].requires += (["protobuf::protoc", "grpc++", "grpc_only"])
+        self.cpp_info.components["grpc++_reflection"].system_libs = [_gRPC_ALLTARGETS_LIBRARIES]
+        self.cpp_info.components["grpc++_reflection"].requires = ["protobuf::protoc", "grpc++", "grpc_only"]
