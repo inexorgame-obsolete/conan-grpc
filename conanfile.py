@@ -161,6 +161,8 @@ class grpcConan(ConanFile):
             return "{}{}".format(_gRPC_LIBRARY_PREFIX, name)
 
         # TODO: Update respectively when Protobuf and Abseil have Components support
+        # TODO: What about protobuflite? Is it supported by grpc? If yes, we need to handle this here somehow
+
         self.cpp_info.components["upb"].libs = [_lib_name("upb")]
 
         self.cpp_info.components["address_sorting"].libs = [_lib_name("address_sorting")]
@@ -173,8 +175,7 @@ class grpcConan(ConanFile):
         # self.cpp_info.components["gpr"].requires = ["absl::time", "absl::strings", "absl::str_format", "absl::memory"]
         self.cpp_info.components["gpr"].requires = ["abseil::abseil"]
 
-        self.cpp_info.components["grpc_only"].names["cmake_find_package"] = "grpc"
-        self.cpp_info.components["grpc_only"].names["cmake_find_package_multi"] = "grpc"
+        self.cpp_info.components["grpc_only"].name = "grpc"
         self.cpp_info.components["grpc_only"].libs = [_lib_name("grpc")]
         self.cpp_info.components["grpc_only"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
         if tools.is_apple_os(self.settings.os):

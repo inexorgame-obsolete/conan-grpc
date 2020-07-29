@@ -50,13 +50,8 @@ add_library(hw_proto_obj OBJECT ${hw_proto_srcs} ${hw_grpc_srcs})
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # Targets greeter_[async_](client)
-foreach(_target
-  greeter_client_server)
+foreach(_target greeter_client_server)
 # greeter_async_client greeter_async_server)
-  add_executable(${_target} "${_target}.cc"
-    $<TARGET_OBJECTS:hw_proto_obj>)
-  target_link_libraries(${_target}
-    gRPC::grpc++_unsecure
-    Protobuf::Protobuf) # TODO: Replace with protobuf::libprotobuf when available
-    # TODO: What about protobuflite? Is it supported here?
+  add_executable(${_target} "${_target}.cc" $<TARGET_OBJECTS:hw_proto_obj>)
+  target_link_libraries(${_target} gRPC::grpc++_unsecure)
 endforeach()
