@@ -9,28 +9,19 @@ if(MSVC)
 endif()
 set(CMAKE_CXX_STANDARD 11)
 
-# This branch assumes that gRPC and all its dependencies are already installed
-# on this system, so they can be located by find_package().
-
-# Workaround until https://github.com/conan-io/conan-center-index/issues/1697 is fixed
-find_package(absl REQUIRED CONFIG)
-
 # Find Protobuf installation
-# Looks for protobuf-config.cmake file installed by Protobuf's cmake installation.
-set(protobuf_MODULE_COMPATIBLE TRUE)
+
+# set(protobuf_MODULE_COMPATIBLE TRUE)
 find_package(Protobuf CONFIG REQUIRED)
 message(STATUS "Using protobuf ${protobuf_VERSION}")
 
-set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
-set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
+# set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
+find_program(_PROTOBUF_PROTOC protoc ${CONAN_BIN_DIRS_PROTOBUF} NO_DEFAULT_PATH)
 
 # Find gRPC installation
-# Looks for gRPCConfig.cmake file installed by gRPC's cmake installation.
-find_package(protoc CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 message(STATUS "Using gRPC ${gRPC_VERSION}")
 
-set(_GRPC_GRPCPP_UNSECURE gRPC::grpc++_unsecure)
 set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
 
 # Proto file
@@ -65,6 +56,7 @@ foreach(_target
   add_executable(${_target} "${_target}.cc"
     $<TARGET_OBJECTS:hw_proto_obj>)
   target_link_libraries(${_target}
-    ${_GRPC_GRPCPP_UNSECURE}
-    ${_PROTOBUF_LIBPROTOBUF})
+    gRPC::grpc++_unsecure
+    Protobuf::Protobuf) # TODO: Replace with protobuf::libprotobuf when available
+    # TODO: What about protobuflite? Is it supported here?
 endforeach()
