@@ -36,8 +36,6 @@ class grpcConan(ConanFile):
         "zlib/1.2.11",
         "openssl/1.1.1g",
         "protobuf/3.11.4",
-        # "protobuf/3.9.1@bincrafters/stable",
-        # "protoc_installer/3.9.1@bincrafters/stable",
         "c-ares/1.15.0",
         "abseil/20200225.2"
     )
@@ -138,21 +136,6 @@ class grpcConan(ConanFile):
         self.cpp_info.names["cmake_find_package"] = "gRPC"
         self.cpp_info.names["cmake_find_package_multi"] = "gRPC"
 
-        # self.cpp_info.libs = [
-            # "grpc++_unsecure",
-            # "grpc++_reflection",
-            # "grpc++_error_details",
-            # "grpc++",
-            # "grpc_unsecure",
-            # "grpc_plugin_support",
-            # "grpc_cronet",
-            # "grpcpp_channelz",
-            # "grpc",
-            # "gpr",
-            # "address_sorting",
-            # "upb",
-        # ]
-
         _gRPC_ALLTARGETS_LIBRARIES = []
         _gRPC_BASELIB_LIBRARIES = []
         _gRPC_LIBRARY_PREFIX = ""
@@ -170,6 +153,7 @@ class grpcConan(ConanFile):
         def _lib_name(name):
             return "{}{}".format(_gRPC_LIBRARY_PREFIX, name)
 
+        # TODO: Update respectively when Protobuf and Abseil have Components support
         self.cpp_info.components["upb"].libs = [_lib_name("upb")]
 
         self.cpp_info.components["address_sorting"].libs = [_lib_name("address_sorting")]
