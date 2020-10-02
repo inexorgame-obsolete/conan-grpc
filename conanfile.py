@@ -57,16 +57,6 @@ class grpcConan(ConanFile):
         # See #5
         tools.replace_in_file(cmake_path, "_gRPC_PROTOBUF_LIBRARIES", "CONAN_LIBS_PROTOBUF")
 
-        # Workaround until https://github.com/conan-io/conan-center-index/issues/1697 is fixed
-        if Version(self.version) > "1.27.0":
-            tools.replace_in_file(cmake_path, "absl::strings", "absl::absl")
-            tools.replace_in_file(cmake_path, "absl::optional", "absl::absl")
-            tools.replace_in_file(cmake_path, "absl::inlined_vector", "absl::absl")
-        if Version(self.version) > "1.29.0":
-            tools.replace_in_file(cmake_path, "absl::time", "absl::absl")
-            tools.replace_in_file(cmake_path, "absl::str_format", "absl::absl")
-            tools.replace_in_file(cmake_path, "absl::memory", "absl::absl")
-
         # Parts which should be options:
         # grpc_cronet
         # grpc++_cronet
@@ -172,24 +162,24 @@ class grpcConan(ConanFile):
         self.cpp_info.components["gpr"].system_libs.extend(_gRPC_ALLTARGETS_LIBRARIES)
         if self.settings.os == "Android":
             self.cpp_info.components["gpr"].system_libs.extend(["android", "log"])
-        # self.cpp_info.components["gpr"].requires = ["absl::time", "absl::strings", "absl::str_format", "absl::memory"]
-        self.cpp_info.components["gpr"].requires = ["abseil::abseil"]
+        self.cpp_info.components["gpr"].requires = ["abseil::time", "abseil::strings", "abseil::str_format", "abseil::memory"]
+        # self.cpp_info.components["gpr"].requires = ["abseil::abseil"]
 
         self.cpp_info.components["grpc_only"].name = "grpc"
         self.cpp_info.components["grpc_only"].libs = [_lib_name("grpc")]
         self.cpp_info.components["grpc_only"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
         if tools.is_apple_os(self.settings.os):
             self.cpp_info.components["grpc_only"].frameworks = ["CoreFoundation"]
-        # self.cpp_info.components["grpc_only"].requires = ["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "gpr", "address_sorting", "upb", "absl::optional", "absl::string", "absl::inline_vector"]
-        self.cpp_info.components["grpc_only"].requires = ["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "gpr", "address_sorting", "upb", "abseil::abseil"]
+        self.cpp_info.components["grpc_only"].requires = ["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "gpr", "address_sorting", "upb", "abseil::optional", "abseil::string", "abseil::inline_vector"]
+        # self.cpp_info.components["grpc_only"].requires = ["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "gpr", "address_sorting", "upb", "abseil::abseil"]
         
 
         self.cpp_info.components["grpc_unsecure"].libs = [_lib_name("grpc_unsecure")]
         self.cpp_info.components["grpc_unsecure"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
         if tools.is_apple_os(self.settings.os):
             self.cpp_info.components["grpc_unsecure"].frameworks = ["CoreFoundation"]
-        # self.cpp_info.components["grpc_unsecure"].requires = ["zlib::zlib", "c-ares::cares", "address_sorting" "upb", "gpr", "absl::optional", "absl::string", "absl::inline_vector"]
-        self.cpp_info.components["grpc_unsecure"].requires = ["zlib::zlib", "c-ares::cares", "address_sorting", "upb", "gpr", "abseil::abseil"]
+        self.cpp_info.components["grpc_unsecure"].requires = ["zlib::zlib", "c-ares::cares", "address_sorting" "upb", "gpr", "abseil::optional", "abseil::string", "abseil::inline_vector"]
+        # self.cpp_info.components["grpc_unsecure"].requires = ["zlib::zlib", "c-ares::cares", "address_sorting", "upb", "gpr", "abseil::abseil"]
 
         self.cpp_info.components["grpc++"].libs = [_lib_name("grpc++")]
         self.cpp_info.components["grpc++"].system_libs.extend(_gRPC_BASELIB_LIBRARIES + _gRPC_ALLTARGETS_LIBRARIES)
