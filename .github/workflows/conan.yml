@@ -76,7 +76,10 @@ jobs:
         shell: bash
       - name: Run
         env:
+          CONAN_UPLOAD: ${{ secrets.CONAN_UPLOAD }}
           CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
+          CONAN_USERNAME: ${{ secrets.CONAN_USERNAME }}
           CONAN_PASSWORD: ${{ secrets.CONAN_PASSWORD }}
+          CONAN_BUILD_POLICY: ${{ secrets.CONAN_BUILD_POLICY }}
         run: |
           bincrafters-package-tools --auto
