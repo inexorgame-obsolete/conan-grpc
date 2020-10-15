@@ -104,6 +104,13 @@ class grpcConan(ConanFile):
         cmake.definitions['gRPC_SSL_PROVIDER'] = "package"
         cmake.definitions['gRPC_PROTOBUF_PROVIDER'] = "package"
 
+        # see https://github.com/inexorgame/conan-grpc/issues/39
+        if self.settings.os == "Windows":
+            if not self.options["protobuf"].shared:
+                cmake.definitions["Protobuf_USE_STATIC_LIBS"] = "ON"
+            else:
+                cmake.definitions["PROTOBUF_USE_DLLS"] = "ON"
+
         # Compilation on minGW GCC requires to set _WIN32_WINNTT to at least 0x600
         # https://github.com/grpc/grpc/blob/109c570727c3089fef655edcdd0dd02cc5958010/include/grpc/impl/codegen/port_platform.h#L44
         if self.settings.os == "Windows" and self.settings.compiler == "gcc":
