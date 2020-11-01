@@ -2,6 +2,8 @@ from conans import ConanFile, CMake, tools
 from conans.errors import ConanInvalidConfiguration
 from conans.tools import Version
 import os
+import re
+import json
 
 
 class grpcConan(ConanFile):
@@ -18,6 +20,7 @@ class grpcConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     # TODO: Add shared option
     options = {
+        "shared": [True, False],
         "fPIC": [True, False],
         "build_codegen": [True, False],
         "build_csharp_ext": [True, False],
@@ -30,6 +33,7 @@ class grpcConan(ConanFile):
         "build_ruby_plugin": [True, False]
     }
     default_options = {
+        "shared": False,
         "fPIC": True,
         "build_codegen": True,
         "build_csharp_ext": False,
@@ -62,6 +66,12 @@ class grpcConan(ConanFile):
             if compiler_version < 14:
                 raise ConanInvalidConfiguration("gRPC can only be built with Visual Studio 2015 or higher.")
 
+    def config_options(self):
+        pass
+        # if protobuf not compiled with 'lite' library, delete use_proto_lite
+        # if not self.options["protobuf"].lite:
+        #    del self.options.use_proto_lite
+
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
         extracted_dir = self.name + "-" + self.version
@@ -85,6 +95,7 @@ class grpcConan(ConanFile):
 
         cmake.definitions["gRPC_BUILD_CODEGEN"] = "ON" if self.options.build_codegen else "OFF"
         cmake.definitions["gRPC_BUILD_CSHARP_EXT"] = "ON" if self.options.build_csharp_ext else "OFF"
+        cmake.definitions['gRPC_BACKWARDS_COMPATIBILITY_MODE'] = "OFF"
         cmake.definitions["gRPC_BUILD_TESTS"] = "OFF"
 
         # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
@@ -97,7 +108,10 @@ class grpcConan(ConanFile):
         cmake.definitions["gRPC_ZLIB_PROVIDER"] = "package"
         cmake.definitions["gRPC_SSL_PROVIDER"] = "package"
         cmake.definitions["gRPC_PROTOBUF_PROVIDER"] = "package"
+        cmake.definitions['gRPC_PROTOBUF_PACKAGE_TYPE'] = "MODULE"
         cmake.definitions["gRPC_RE2_PROVIDER"] = "package"
+
+        cmake.definitions['gRPC_USE_PROTO_LITE'] = "OFF"
 
         cmake.definitions["gRPC_BUILD_GRPC_CPP_PLUGIN"] = self.options.build_cpp_plugin
         cmake.definitions["gRPC_BUILD_GRPC_CSHARP_PLUGIN"] = self.options.build_csharp_plugin
@@ -126,38 +140,75 @@ class grpcConan(ConanFile):
         cmake = self._configure_cmake()
         cmake.install()
 
-        # tools.rmdir(os.path.join(self.package_folder, "lib", "cmake"))
-        # tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        tools.rmdir(os.path.join(self.package_folder, "share"))
-    
+        cmake_folder = os.path.join(self.package_folder, "lib", "cmake")
+        tools.rmdir(cmake_folder)
+
     def package_info(self):
         bindir = os.path.join(self.package_folder, "bin")
         self.output.info("Appending PATH environment variable: {}".format(bindir))
         self.env_info.PATH.append(bindir)
 
+        system_libs = []
+        if self.settings.os == "Macos" or self.settings.os == "iOS":
+            system_libs = ["dl", "m", "pthread"]
+        elif self.settings.os == "Linux":
+            system_libs = ["dl", "m", "rt", "pthread"]
+        elif self.settings.os == "Android":
+            system_libs = ["dl", "m"]
+        elif self.settings.os == "Windows":
+            system_libs = ["wsock32", "ws2_32", "crypt32"]
+
         self.cpp_info.names["cmake_find_package"] = "gRPC"
         self.cpp_info.names["cmake_find_package_multi"] = "gRPC"
 
-        self.cpp_info.libs = [
-            "grpc++_unsecure",
-            "grpc++_reflection",
-            "grpc++_error_details",
-            "grpc++",
-            "grpc_unsecure",
-            "grpc_plugin_support",
-            "grpc_cronet",
-            "grpcpp_channelz",
-            "grpc",
-            "gpr",
-            "address_sorting",
-            "upb",
-        ]
+        self.cpp_info.components["address_sorting"].libs = ["address_sorting"]
+        self.cpp_info.components["address_sorting"].system_libs = system_libs
 
-        if self.settings.os == "Windows":
-            self.cpp_info.system_libs = ["wsock32", "ws2_32", "crypt32"]
-        if self.settings.os == "Linux":
-            self.cpp_info.system_libs = ["dl", "rt", "m", "pthread"]
-        if tools.is_apple_os(self.settings.os):
-            self.cpp_info.system_libs = ["m", "pthread"]
+        self.cpp_info.components["upb"].libs = ["upb"]
+        self.cpp_info.components["upb"].system_libs = system_libs
+
+        self.cpp_info.components["gpr"].libs = ["gpr"]
+        self.cpp_info.components["gpr"].system_libs = system_libs
         if self.settings.os == "Android":
-            self.cpp_info.system_libs = ["m"]
+            self.cpp_info.components["gpr"].system_libs.append("log")
+        self.cpp_info.components["gpr"].requires = ["abseil::absl_time", "abseil::absl_synchronization", "abseil::absl_strings", "abseil::absl_str_format", "abseil::absl_memory", "abseil::absl_base"]
+
+        self.cpp_info.components["libgrpc"].libs = ["grpc"]
+        self.cpp_info.components["libgrpc"].system_libs = system_libs
+        self.cpp_info.components["libgrpc"].frameworks = ["CoreFoundation"]
+        self.cpp_info.components["libgrpc"].requires = ["openssl::ssl", "openssl::crypto", "zlib::zlib", "c-ares::cares", "re2::re2", "address_sorting", "upb", "gpr", "abseil::absl_optional", "abseil::absl_strings", "abseil::absl_status", "abseil::absl_inlined_vector", "abseil::absl_flat_hash_set"]
+
+        self.cpp_info.components["grpc_plugin_support"].libs = ["grpc_plugin_support"]
+        self.cpp_info.components["grpc_plugin_support"].system_libs = system_libs
+        self.cpp_info.components["grpc_plugin_support"].requires = ["protobuf::libprotoc", "protobuf::libprotobuf"]
+
+        self.cpp_info.components["grpc_unsecure"].libs = ["grpc_unsecure"]
+        self.cpp_info.components["grpc_unsecure"].system_libs = system_libs
+        self.cpp_info.components["grpc_unsecure"].frameworks = ["CoreFoundation"]
+        self.cpp_info.components["grpc_unsecure"].requires = ["zlib::zlib", "c-ares::cares", "re2::re2", "address_sorting", "upb", "abseil::absl_optional", "abseil::absl_strings", "abseil::absl_status", "abseil::absl_inlined_vector"]
+
+        self.cpp_info.components["grpc++"].libs = ["grpc++"]
+        self.cpp_info.components["grpc++"].system_libs = system_libs
+        self.cpp_info.components["grpc++"].requires = ["protobuf::libprotobuf", "libgrpc", "gpr", "address_sorting", "upb"]
+
+        self.cpp_info.components["grpcpp_channelz"].libs = ["grpcpp_channelz"]
+        self.cpp_info.components["grpcpp_channelz"].system_libs = system_libs
+        self.cpp_info.components["grpcpp_channelz"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
+
+        self.cpp_info.components["grpc++_alts"].libs = ["grpc++_alts"]
+        self.cpp_info.components["grpc++_alts"].system_libs = system_libs
+        self.cpp_info.components["grpc++_alts"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
+
+        self.cpp_info.components["grpc++_error_details"].libs = ["grpc++_error_details"]
+        self.cpp_info.components["grpc++_error_details"].system_libs = system_libs
+        self.cpp_info.components["grpc++_error_details"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
+
+        self.cpp_info.components["grpc++_reflection"].libs = ["grpc++_reflection"]
+        self.cpp_info.components["grpc++_reflection"].system_libs = system_libs
+        self.cpp_info.components["grpc++_reflection"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
+
+        self.cpp_info.components["grpc++_unsecure"].libs = ["grpc++_unsecure"]
+        self.cpp_info.components["grpc++_unsecure"].system_libs = system_libs
+        self.cpp_info.components["grpc++_unsecure"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
+
+        # TODO: add optional plugin components?
