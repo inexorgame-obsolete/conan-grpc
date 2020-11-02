@@ -1,3 +1,8 @@
+env:
+  CONAN_UPLOAD: https://api.bintray.com/conan/inexorgame/inexor-conan
+  CONAN_BUILD_POLICY: outdated
+  CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
+
 on: [push, pull_request]
 
 jobs:
@@ -23,6 +28,5 @@ jobs:
             CONAN_BUILD_TYPES: ${{matrix.buildType}}
             MINGW_CONFIGURATIONS: ${{matrix.mingwVersion}}@${{matrix.arch}}@${{matrix.exceptions}}@${{matrix.threads}}
             CONAN_BUILD_REQUIRES: "msys2/20161025"
-            CONAN_BUILD_POLICY: "outdated"
         run: |
             bincrafters-package-tools --auto
