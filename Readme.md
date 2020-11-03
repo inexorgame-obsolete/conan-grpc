@@ -9,6 +9,13 @@ Google's RPC library and framework.
 The packages generated with this **conanfile** can be found on [Bintray](https://bintray.com/inexorgame/inexor-conan/grpc%3Ainexorgame).
 
 
+## Yes, this will eventually be merged into the Conan Center Index
+
+No, it isn't ready just yet.
+
+If you need a remote and are allowed to use another remote than CCI, you can add the inexorgame remote as written in this Readme.
+
+
 ## Issues
 
 If you wish to report an issue or make a request for a package, please do so here:
