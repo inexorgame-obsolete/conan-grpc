@@ -4,7 +4,7 @@ project(test_package)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-if(MSVC)
+if(WIN32)
   add_definitions(-D_WIN32_WINNT=0x600)
 endif()
 set(CMAKE_CXX_STANDARD 11)
