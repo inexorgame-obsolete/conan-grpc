@@ -16,8 +16,8 @@ class grpcConan(ConanFile):
     short_paths = True
 
     settings = "os", "arch", "compiler", "build_type"
+    # TODO: Add shared option
     options = {
-        # "shared": [True, False],
         "fPIC": [True, False],
         "build_codegen": [True, False],
         "build_csharp_ext": [True, False]
