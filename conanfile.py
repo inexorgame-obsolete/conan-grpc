@@ -83,7 +83,7 @@ class grpcConan(ConanFile):
         # See #5
         tools.replace_in_file(cmake_path, "_gRPC_PROTOBUF_LIBRARIES", "CONAN_LIBS_PROTOBUF")
 
-        # Parts which should be options:
+        # TODO Parts which should be options:
         # grpc_cronet
         # grpc++_cronet
         # grpc_unsecure (?)
