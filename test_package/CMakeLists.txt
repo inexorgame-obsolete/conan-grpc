@@ -50,11 +50,11 @@ function(protobuf_generate_grpc_cpp SRCS HDRS)
         endforeach()
     endif()
 
-    #find_program(GRPC_CPP_PLUGIN grpc_cpp_plugin) # Get full path to plugin
-    #if (NOT GRPC_CPP_PLUGIN)
-    #    message(SEND_ERROR "Error: grpc_cpp_plugin is required")
-    #    return()
-    #endif()
+    find_program(GRPC_CPP_PLUGIN grpc_cpp_plugin) # Get full path to plugin
+    if (NOT GRPC_CPP_PLUGIN)
+        message(SEND_ERROR "Error: grpc_cpp_plugin is required")
+        return()
+    endif()
 
     set(${SRCS})
     set(${HDRS})
@@ -72,7 +72,7 @@ function(protobuf_generate_grpc_cpp SRCS HDRS)
             ARGS -E env "DYLD_LIBRARY_PATH=${Protobuf_LIB_DIRS}:${CONAN_LIB_DIRS}:${Protobuf_LIB_DIRS_RELEASE}:${Protobuf_LIB_DIRS_DEBUG}:${Protobuf_LIB_DIRS_RELWITHDEBINFO}:${Protobuf_LIB_DIRS_MINSIZEREL}"
                  protoc
                  --grpc_out=${CMAKE_CURRENT_BINARY_DIR}
-                 --plugin=protoc-gen-grpc=/Users/pfarre/.conan/data/grpc/1.32.0//_/_/package/3acfa110a3c6f52dccd913756df0c4804b3c2ab5/bin/grpc_cpp_plugin
+                 --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN}
                  ${_protobuf_include_path} ${ABS_FIL}
             DEPENDS ${ABS_FIL} ${PROTOC_PROGRAM}
             COMMENT "Running gRPC cpp protocol buffer compiler on ${FIL}"
