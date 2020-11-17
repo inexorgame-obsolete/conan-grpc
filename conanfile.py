@@ -2,8 +2,6 @@ from conans import ConanFile, CMake, tools
 from conans.errors import ConanInvalidConfiguration
 from conans.tools import Version
 import os
-import re
-import json
 
 
 class grpcConan(ConanFile):
@@ -18,7 +16,7 @@ class grpcConan(ConanFile):
     short_paths = True
 
     settings = "os", "arch", "compiler", "build_type"
-    # TODO: Add shared option
+
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
@@ -36,7 +34,6 @@ class grpcConan(ConanFile):
         "shared": False,
         "fPIC": True,
         "build_codegen": True,
-        "build_csharp_ext": False,
         "build_csharp_ext": False,
         "build_cpp_plugin": True,
         "build_csharp_plugin": True,
@@ -61,16 +58,16 @@ class grpcConan(ConanFile):
 
     def configure(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
-            del self.options.fPIC
             compiler_version = tools.Version(self.settings.compiler.version)
             if compiler_version < 14:
                 raise ConanInvalidConfiguration("gRPC can only be built with Visual Studio 2015 or higher.")
+        if self.options.shared:
+            if tools.is_apple_os(self.settings.os):
+                raise ConanInvalidConfiguration("gRPC could not be built as shared library for Mac.")
 
     def config_options(self):
-        pass
-        # if protobuf not compiled with 'lite' library, delete use_proto_lite
-        # if not self.options["protobuf"].lite:
-        #    del self.options.use_proto_lite
+        if self.settings.os == "Windows":
+            del self.options.fPIC
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
@@ -92,7 +89,6 @@ class grpcConan(ConanFile):
         #
         # cmake.definitions["CONAN_ENABLE_MOBILE"] = "ON" if self.options.build_csharp_ext else "OFF"
 
-
         cmake.definitions["gRPC_BUILD_CODEGEN"] = "ON" if self.options.build_codegen else "OFF"
         cmake.definitions["gRPC_BUILD_CSHARP_EXT"] = "ON" if self.options.build_csharp_ext else "OFF"
         cmake.definitions['gRPC_BACKWARDS_COMPATIBILITY_MODE'] = "OFF"
@@ -112,6 +108,8 @@ class grpcConan(ConanFile):
         cmake.definitions["gRPC_RE2_PROVIDER"] = "package"
 
         cmake.definitions['gRPC_USE_PROTO_LITE'] = "OFF"
+        if self.options["protobuf"].lite:
+            raise ConanInvalidConfiguration("protobuf:lite is not handled properly in gRPC recipe")
 
         cmake.definitions["gRPC_BUILD_GRPC_CPP_PLUGIN"] = self.options.build_cpp_plugin
         cmake.definitions["gRPC_BUILD_GRPC_CSHARP_PLUGIN"] = self.options.build_csharp_plugin
@@ -122,6 +120,7 @@ class grpcConan(ConanFile):
         cmake.definitions["gRPC_BUILD_GRPC_RUBY_PLUGIN"] = self.options.build_ruby_plugin
 
         # see https://github.com/inexorgame/conan-grpc/issues/39
+        # TODO: can we remove this now that CCI protobuf provides PROTOBUF_USE_DLLS ?
         if self.settings.os == "Windows":
             if not self.options["protobuf"].shared:
                 cmake.definitions["Protobuf_USE_STATIC_LIBS"] = "ON"
@@ -160,6 +159,7 @@ class grpcConan(ConanFile):
 
         self.cpp_info.names["cmake_find_package"] = "gRPC"
         self.cpp_info.names["cmake_find_package_multi"] = "gRPC"
+        self.cpp_info.names["pkg_config"] = "gRPC"
 
         self.cpp_info.components["address_sorting"].libs = ["address_sorting"]
         self.cpp_info.components["address_sorting"].system_libs = system_libs
@@ -191,24 +191,26 @@ class grpcConan(ConanFile):
         self.cpp_info.components["grpc++"].system_libs = system_libs
         self.cpp_info.components["grpc++"].requires = ["protobuf::libprotobuf", "libgrpc", "gpr", "address_sorting", "upb"]
 
-        self.cpp_info.components["grpcpp_channelz"].libs = ["grpcpp_channelz"]
-        self.cpp_info.components["grpcpp_channelz"].system_libs = system_libs
-        self.cpp_info.components["grpcpp_channelz"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
+        if self.options.build_codegen:  # and not use_proto_lite
+            self.cpp_info.components["grpcpp_channelz"].libs = ["grpcpp_channelz"]
+            self.cpp_info.components["grpcpp_channelz"].system_libs = system_libs
+            self.cpp_info.components["grpcpp_channelz"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
 
         self.cpp_info.components["grpc++_alts"].libs = ["grpc++_alts"]
         self.cpp_info.components["grpc++_alts"].system_libs = system_libs
         self.cpp_info.components["grpc++_alts"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
 
-        self.cpp_info.components["grpc++_error_details"].libs = ["grpc++_error_details"]
-        self.cpp_info.components["grpc++_error_details"].system_libs = system_libs
-        self.cpp_info.components["grpc++_error_details"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
+        if self.options.build_codegen:
+            self.cpp_info.components["grpc++_error_details"].libs = ["grpc++_error_details"]
+            self.cpp_info.components["grpc++_error_details"].system_libs = system_libs
+            self.cpp_info.components["grpc++_error_details"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
 
-        self.cpp_info.components["grpc++_reflection"].libs = ["grpc++_reflection"]
-        self.cpp_info.components["grpc++_reflection"].system_libs = system_libs
-        self.cpp_info.components["grpc++_reflection"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
+            self.cpp_info.components["grpc++_reflection"].libs = ["grpc++_reflection"]
+            self.cpp_info.components["grpc++_reflection"].system_libs = system_libs
+            self.cpp_info.components["grpc++_reflection"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
 
         self.cpp_info.components["grpc++_unsecure"].libs = ["grpc++_unsecure"]
         self.cpp_info.components["grpc++_unsecure"].system_libs = system_libs
         self.cpp_info.components["grpc++_unsecure"].requires = ["protobuf::libprotobuf", "grpc++", "libgrpc", "gpr", "upb"]
 
-        # TODO: add optional plugin components?
+        # TODO: add optional plugin components? Can we add components for executables? (all plugins mainly)
