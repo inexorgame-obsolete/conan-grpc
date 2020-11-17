@@ -20,12 +20,27 @@ class grpcConan(ConanFile):
     options = {
         "fPIC": [True, False],
         "build_codegen": [True, False],
-        "build_csharp_ext": [True, False]
+        "build_csharp_ext": [True, False],
+        "build_cpp_plugin": [True, False],
+        "build_csharp_plugin": [True, False],
+        "build_node_plugin": [True, False],
+        "build_objective_c_plugin": [True, False],
+        "build_php_plugin": [True, False],
+        "build_python_plugin": [True, False],
+        "build_ruby_plugin": [True, False]
     }
     default_options = {
         "fPIC": True,
         "build_codegen": True,
-        "build_csharp_ext": False
+        "build_csharp_ext": False,
+        "build_csharp_ext": False,
+        "build_cpp_plugin": True,
+        "build_csharp_plugin": True,
+        "build_node_plugin": True,
+        "build_objective_c_plugin": True,
+        "build_php_plugin": True,
+        "build_python_plugin": True,
+        "build_ruby_plugin": True,
     }
 
     _source_subfolder = "source_subfolder"
@@ -57,21 +72,6 @@ class grpcConan(ConanFile):
         # See #5
         tools.replace_in_file(cmake_path, "_gRPC_PROTOBUF_LIBRARIES", "CONAN_LIBS_PROTOBUF")
 
-        # Parts which should be options:
-        # grpc_cronet
-        # grpc++_cronet
-        # grpc_unsecure (?)
-        # grpc++_unsecure (?)
-        # grpc++_reflection
-        # gen_hpack_tables (?)
-        # gen_legal_metadata_characters (?)
-        # grpc_csharp_plugin
-        # grpc_node_plugin
-        # grpc_objective_c_plugin
-        # grpc_php_plugin
-        # grpc_python_plugin
-        # grpc_ruby_plugin
-
     def _configure_cmake(self):
         cmake = CMake(self)
 
@@ -79,30 +79,33 @@ class grpcConan(ConanFile):
         # and we need the install target because of the generated CMake files
         #
         #   enable_mobile=False # Enables iOS and Android support
-        #   non_cpp_plugins=False # Enables plugins such as --java-out and --py-out (if False, only --cpp-out is possible)
         #
-        # cmake.definitions['CONAN_ADDITIONAL_PLUGINS'] = "ON" if self.options.build_csharp_ext else "OFF"
-        #
-        # Doesn't work yet for the same reason as above
-        #
-        # cmake.definitions['CONAN_ENABLE_MOBILE'] = "ON" if self.options.build_csharp_ext else "OFF"
+        # cmake.definitions["CONAN_ENABLE_MOBILE"] = "ON" if self.options.build_csharp_ext else "OFF"
 
 
-        cmake.definitions['gRPC_BUILD_CODEGEN'] = "ON" if self.options.build_codegen else "OFF"
-        cmake.definitions['gRPC_BUILD_CSHARP_EXT'] = "ON" if self.options.build_csharp_ext else "OFF"
-        cmake.definitions['gRPC_BUILD_TESTS'] = "OFF"
+        cmake.definitions["gRPC_BUILD_CODEGEN"] = "ON" if self.options.build_codegen else "OFF"
+        cmake.definitions["gRPC_BUILD_CSHARP_EXT"] = "ON" if self.options.build_csharp_ext else "OFF"
+        cmake.definitions["gRPC_BUILD_TESTS"] = "OFF"
 
         # We need the generated cmake/ files (bc they depend on the list of targets, which is dynamic)
-        cmake.definitions['gRPC_INSTALL'] = "ON"
-        # cmake.definitions['CMAKE_INSTALL_PREFIX'] = self._build_subfolder
+        cmake.definitions["gRPC_INSTALL"] = "ON"
+        # cmake.definitions["CMAKE_INSTALL_PREFIX"] = self._build_subfolder
 
         # tell grpc to use the find_package versions
-        cmake.definitions['gRPC_ABSL_PROVIDER'] = "package"
-        cmake.definitions['gRPC_CARES_PROVIDER'] = "package"
-        cmake.definitions['gRPC_ZLIB_PROVIDER'] = "package"
-        cmake.definitions['gRPC_SSL_PROVIDER'] = "package"
-        cmake.definitions['gRPC_PROTOBUF_PROVIDER'] = "package"
-        cmake.definitions['gRPC_RE2_PROVIDER'] = "package"
+        cmake.definitions["gRPC_ABSL_PROVIDER"] = "package"
+        cmake.definitions["gRPC_CARES_PROVIDER"] = "package"
+        cmake.definitions["gRPC_ZLIB_PROVIDER"] = "package"
+        cmake.definitions["gRPC_SSL_PROVIDER"] = "package"
+        cmake.definitions["gRPC_PROTOBUF_PROVIDER"] = "package"
+        cmake.definitions["gRPC_RE2_PROVIDER"] = "package"
+
+        cmake.definitions["gRPC_BUILD_GRPC_CPP_PLUGIN"] = self.options.build_cpp_plugin
+        cmake.definitions["gRPC_BUILD_GRPC_CSHARP_PLUGIN"] = self.options.build_csharp_plugin
+        cmake.definitions["gRPC_BUILD_GRPC_NODE_PLUGIN"] = self.options.build_node_plugin
+        cmake.definitions["gRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN"] = self.options.build_objective_c_plugin
+        cmake.definitions["gRPC_BUILD_GRPC_PHP_PLUGIN"] = self.options.build_php_plugin
+        cmake.definitions["gRPC_BUILD_GRPC_PYTHON_PLUGIN"] = self.options.build_python_plugin
+        cmake.definitions["gRPC_BUILD_GRPC_RUBY_PLUGIN"] = self.options.build_ruby_plugin
 
         # see https://github.com/inexorgame/conan-grpc/issues/39
         if self.settings.os == "Windows":
