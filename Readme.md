@@ -27,14 +27,14 @@ If you wish to report an issue or make a request for a package, please do so her
 
 ### Basic setup
 
-    $ conan install grpc/1.29.1@inexorgame/stable
+    $ conan install grpc/1.31.1@inexorgame/stable
 
 ### Project setup
 
 If you handle multiple dependencies in your project is better to add a *conanfile.txt*
 
     [requires]
-    grpc/1.29.1@inexorgame/stable
+    grpc/1.31.1@inexorgame/stable
 
     [generators]
     cmake
@@ -71,4 +71,4 @@ The following command both runs all the steps of the conan file, and publishes t
 NOTE: The conan recipe license applies only to the files of this recipe, which can be used to build and package grpc.
 It does *not* in any way apply or is related to the actual software being packaged.
 
-[MIT](https://github.com/inexorgame/conan-grpc/blob/stable/1.29.1/LICENSE.md)
+[MIT](https://github.com/inexorgame/conan-grpc/blob/stable/1.31.1/LICENSE.md)

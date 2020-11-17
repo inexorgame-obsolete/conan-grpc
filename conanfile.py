@@ -34,9 +34,10 @@ class grpcConan(ConanFile):
     requires = (
         "zlib/1.2.11",
         "openssl/1.1.1h",
-        "protobuf/3.9.1",
+        "protobuf/3.12.4",
         "c-ares/1.15.0",
-        "abseil/20200225.3"
+        "abseil/20200225.3",
+        "re2/20201101"
     )
 
     def configure(self):
@@ -101,6 +102,7 @@ class grpcConan(ConanFile):
         cmake.definitions['gRPC_ZLIB_PROVIDER'] = "package"
         cmake.definitions['gRPC_SSL_PROVIDER'] = "package"
         cmake.definitions['gRPC_PROTOBUF_PROVIDER'] = "package"
+        cmake.definitions['gRPC_RE2_PROVIDER'] = "package"
 
         # see https://github.com/inexorgame/conan-grpc/issues/39
         if self.settings.os == "Windows":
