@@ -1,7 +1,7 @@
 env:
   CONAN_UPLOAD: https://api.bintray.com/conan/inexorgame/inexor-conan
   CONAN_BUILD_POLICY: missing
-  CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
+  CONAN_USERNAME: inexorgame
 
 # bincrafters-conventions:gha-workflow-version:8
 # You can add custom environment variables above the version tag
@@ -68,7 +68,7 @@ jobs:
         shell: bash
       - name: Run
         env:
-          CONAN_USERNAME: ${{ secrets.CONAN_USERNAME }}
+          CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
           CONAN_PASSWORD: ${{ secrets.CONAN_PASSWORD }}
         run: |
           bincrafters-package-tools --auto
