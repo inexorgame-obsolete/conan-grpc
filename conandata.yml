@@ -26,3 +26,6 @@ sources:
   "1.32.0":
     url: https://github.com/grpc/grpc/archive/v1.32.0.zip
     sha256: 42e9e609a9633bc89466986caef30151d26b2ec7c38c66aa77bf4e0ac00e3562
+  "1.34.0":
+    url: https://github.com/grpc/grpc/archive/v1.34.0.zip
+    sha256: aec9faf1e957caa9a28001a606f9b08ef5a165de6900b04615a304f0d6e139ca
