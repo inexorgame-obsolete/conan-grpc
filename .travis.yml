@@ -1,5 +1,0 @@
-env:
-  global:
-    - splitByBuildTypes=true
-
-import: bincrafters/templates:.ci/travis-macos.yml@main
