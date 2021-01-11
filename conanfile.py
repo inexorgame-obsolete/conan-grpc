@@ -33,7 +33,6 @@ class grpcConan(ConanFile):
         "fPIC": True,
         "build_codegen": True,
         "build_csharp_ext": False,
-        "build_csharp_ext": False,
         "build_cpp_plugin": True,
         "build_csharp_plugin": True,
         "build_node_plugin": True,
