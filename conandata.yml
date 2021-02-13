@@ -32,3 +32,7 @@ sources:
   "1.34.1":
     url: https://github.com/grpc/grpc/archive/v1.34.1.zip
     sha256: 0884778ef7866c2aaa9c06abd820f2ba2b514edcc5ec21bda74f3b7253036f9d
+patches:
+  "1.34.1":
+    - patch_file: "patches/upstream-pr-24959-only-openssl-engine-when-supported.patch"
+      base_path: "source_subfolder"

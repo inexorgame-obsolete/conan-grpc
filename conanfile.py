@@ -11,7 +11,7 @@ class grpcConan(ConanFile):
     url = "https://github.com/inexorgame/conan-grpc"
     homepage = "https://github.com/grpc/grpc"
     license = "Apache-2.0"
-    exports_sources = ["CMakeLists.txt"]
+    exports_sources = ["CMakeLists.txt", "patches/*"]
     generators = "cmake", "cmake_find_package_multi"
     short_paths = True
 
@@ -53,6 +53,14 @@ class grpcConan(ConanFile):
         "abseil/20200225.3",
         "re2/20201101"
     )
+
+    def build_requirements(self):
+        self.build_requires("protobuf/3.13.0")
+
+        # When cross building the recipe depends on itself to provide the plugins
+        if tools.cross_building(self.settings):
+            self.build_requires(
+                f"{self.name}/{self.version}@{self.user}/{self.channel}")
 
     def configure(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
@@ -98,13 +106,13 @@ class grpcConan(ConanFile):
         cmake.definitions["gRPC_PROTOBUF_PROVIDER"] = "package"
         cmake.definitions["gRPC_RE2_PROVIDER"] = "package"
 
-        cmake.definitions["gRPC_BUILD_GRPC_CPP_PLUGIN"] = self.options.build_cpp_plugin
-        cmake.definitions["gRPC_BUILD_GRPC_CSHARP_PLUGIN"] = self.options.build_csharp_plugin
-        cmake.definitions["gRPC_BUILD_GRPC_NODE_PLUGIN"] = self.options.build_node_plugin
-        cmake.definitions["gRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN"] = self.options.build_objective_c_plugin
-        cmake.definitions["gRPC_BUILD_GRPC_PHP_PLUGIN"] = self.options.build_php_plugin
-        cmake.definitions["gRPC_BUILD_GRPC_PYTHON_PLUGIN"] = self.options.build_python_plugin
-        cmake.definitions["gRPC_BUILD_GRPC_RUBY_PLUGIN"] = self.options.build_ruby_plugin
+        cmake.definitions["gRPC_BUILD_GRPC_CPP_PLUGIN"] = self.options.build_cpp_plugin and not tools.cross_building(self.settings)
+        cmake.definitions["gRPC_BUILD_GRPC_CSHARP_PLUGIN"] = self.options.build_csharp_plugin and not tools.cross_building(self.settings)
+        cmake.definitions["gRPC_BUILD_GRPC_NODE_PLUGIN"] = self.options.build_node_plugin and not tools.cross_building(self.settings)
+        cmake.definitions["gRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN"] = self.options.build_objective_c_plugin and not tools.cross_building(self.settings)
+        cmake.definitions["gRPC_BUILD_GRPC_PHP_PLUGIN"] = self.options.build_php_plugin and not tools.cross_building(self.settings)
+        cmake.definitions["gRPC_BUILD_GRPC_PYTHON_PLUGIN"] = self.options.build_python_plugin and not tools.cross_building(self.settings)
+        cmake.definitions["gRPC_BUILD_GRPC_RUBY_PLUGIN"] = self.options.build_ruby_plugin and not tools.cross_building(self.settings)
 
         # see https://github.com/inexorgame/conan-grpc/issues/39
         if self.settings.os == "Windows":
@@ -117,6 +125,9 @@ class grpcConan(ConanFile):
         return cmake
 
     def build(self):
+        for patch in self.conan_data.get("patches", {}).get(self.version, []):
+            tools.patch(**patch)
+
         cmake = self._configure_cmake()
         cmake.build()
 

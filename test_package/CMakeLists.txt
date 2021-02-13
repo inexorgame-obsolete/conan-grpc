@@ -16,15 +16,24 @@ find_package(protobuf CONFIG REQUIRED)
 message(STATUS "Using protobuf ${protobuf_VERSION}")
 
 set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
-# set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
-find_program(_PROTOBUF_PROTOC protoc ${CONAN_BIN_DIRS_PROTOBUF} NO_DEFAULT_PATH)
+
+# Find protoc
+find_program(_PROTOBUF_PROTOC protoc REQUIRED)
+message("_PROTOBUF_PROTOC ${_PROTOBUF_PROTOC}")
+
+if(NOT _PROTOBUF_PROTOC)
+    message(FATAL_ERROR "${_PROTOBUF_PROTOC} but required!")
+endif()
 
 # Find gRPC installation
 find_package(gRPC CONFIG REQUIRED)
-# find_package(protoc CONFIG REQUIRED)
 message(STATUS "Using gRPC ${gRPC_VERSION}")
 
-set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
+# Find GRPC_CPP_PLUGIN_EXECUTABLE
+find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin REQUIRED)
+if(NOT _GRPC_CPP_PLUGIN_EXECUTABLE)
+    message(FATAL_ERROR "${_GRPC_CPP_PLUGIN_EXECUTABLE} but required!")
+endif()
 
 # Proto file
 get_filename_component(hw_proto "helloworld.proto" ABSOLUTE)

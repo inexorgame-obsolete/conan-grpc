@@ -6,6 +6,11 @@ class TestPackageConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake", "cmake_find_package_multi"
 
+    def build_requirements(self):
+        self.build_requires("protobuf/3.13.0")
+        if tools.cross_building(self.settings):
+            self.build_requires(str(self.requires['grpc']))
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()
