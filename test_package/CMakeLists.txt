@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.1)
 project(test_package)
 
+# Need to find protoc before conan setup to make sure we get the correct
+# one when cross compiling.
+find_program(_PROTOBUF_PROTOC protoc REQUIRED)
+message("_PROTOBUF_PROTOC ${_PROTOBUF_PROTOC}")
+
+if(NOT _PROTOBUF_PROTOC)
+    message(FATAL_ERROR "${_PROTOBUF_PROTOC} but required!")
+endif()
+
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
@@ -16,14 +25,6 @@ find_package(protobuf CONFIG REQUIRED)
 message(STATUS "Using protobuf ${protobuf_VERSION}")
 
 set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
-
-# Find protoc
-find_program(_PROTOBUF_PROTOC protoc REQUIRED)
-message("_PROTOBUF_PROTOC ${_PROTOBUF_PROTOC}")
-
-if(NOT _PROTOBUF_PROTOC)
-    message(FATAL_ERROR "${_PROTOBUF_PROTOC} but required!")
-endif()
 
 # Find gRPC installation
 find_package(gRPC CONFIG REQUIRED)
