@@ -59,8 +59,7 @@ class grpcConan(ConanFile):
 
         # When cross building the recipe depends on itself to provide the plugins
         if tools.cross_building(self.settings):
-            self.build_requires(
-                f"{self.name}/{self.version}@{self.user}/{self.channel}")
+            self.build_requires("{}/{}@{}/{}".format(self.name, self.version, self.user, self.channel))
 
     def configure(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
