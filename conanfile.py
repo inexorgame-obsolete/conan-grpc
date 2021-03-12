@@ -50,7 +50,7 @@ class grpcConan(ConanFile):
         "openssl/1.1.1h",
         "protobuf/3.13.0",
         "c-ares/1.15.0",
-        "abseil/20200225.3",
+        "abseil/20200923.3",
         "re2/20201101"
     )
 
