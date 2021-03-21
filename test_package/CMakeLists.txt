@@ -1,15 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 project(test_package)
 
-# Need to find protoc before conan setup to make sure we get the correct
-# one when cross compiling.
-find_program(_PROTOBUF_PROTOC protoc REQUIRED)
-message("_PROTOBUF_PROTOC ${_PROTOBUF_PROTOC}")
-
-if(NOT _PROTOBUF_PROTOC)
-    message(FATAL_ERROR "${_PROTOBUF_PROTOC} but required!")
-endif()
-
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
@@ -19,10 +10,12 @@ endif()
 set(CMAKE_CXX_STANDARD 11)
 
 # Find Protobuf installation
-
 set(protobuf_MODULE_COMPATIBLE TRUE)
 find_package(protobuf CONFIG REQUIRED)
 message(STATUS "Using protobuf ${protobuf_VERSION}")
+if(NOT PROTOC_PROGRAM)
+    message(FATAL_ERROR "Expected Conan to provide: 'PROTOC_PROGRAM'")
+endif()
 
 set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
 
@@ -47,7 +40,7 @@ set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.cc")
 set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.h")
 add_custom_command(
       OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
-      COMMAND ${_PROTOBUF_PROTOC}
+      COMMAND ${PROTOC_PROGRAM}
       ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
         --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
         -I "${hw_proto_path}"
