@@ -138,11 +138,9 @@ class grpcConan(ConanFile):
         self.cpp_info.names["cmake_find_package_multi"] = "gRPC"
 
         self.cpp_info.libs = [
-            "grpc++_unsecure",
             "grpc++_reflection",
             "grpc++_error_details",
             "grpc++",
-            "grpc_unsecure",
             "grpc_plugin_support",
             "grpcpp_channelz",
             "grpc",
