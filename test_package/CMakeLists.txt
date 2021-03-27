@@ -13,8 +13,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(protobuf_MODULE_COMPATIBLE TRUE)
 find_package(protobuf CONFIG REQUIRED)
 message(STATUS "Using protobuf ${protobuf_VERSION}")
-if(NOT PROTOC_PROGRAM)
-    message(FATAL_ERROR "Expected Conan to provide: 'PROTOC_PROGRAM'")
+if(NOT Protobuf_PROTOC_EXECUTABLE)
+    message(FATAL_ERROR "Expected Conan to provide: 'Protobuf_PROTOC_EXECUTABLE'")
 endif()
 
 set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
@@ -40,7 +40,7 @@ set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.cc")
 set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.h")
 add_custom_command(
       OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
-      COMMAND ${PROTOC_PROGRAM}
+      COMMAND ${Protobuf_PROTOC_EXECUTABLE}
       ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
         --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
         -I "${hw_proto_path}"
