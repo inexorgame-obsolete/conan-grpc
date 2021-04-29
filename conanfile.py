@@ -3,6 +3,8 @@ from conans.errors import ConanInvalidConfiguration
 from conans.tools import Version
 import os
 
+required_conan_version = ">=1.33.0"
+
 
 class grpcConan(ConanFile):
     name = "grpc"
@@ -62,9 +64,7 @@ class grpcConan(ConanFile):
                 raise ConanInvalidConfiguration("gRPC can only be built with Visual Studio 2015 or higher.")
 
     def source(self):
-        tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = self.name + "-" + self.version
-        os.rename(extracted_dir, self._source_subfolder)
+        tools.get(**self.conan_data["sources"][self.version], destination=self._source_subfolder, strip_root=True)
 
         cmake_path = os.path.join(self._source_subfolder, "CMakeLists.txt")
 
