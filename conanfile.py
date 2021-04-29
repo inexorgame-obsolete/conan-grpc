@@ -56,6 +56,10 @@ class grpcConan(ConanFile):
         "re2/20201101"
     )
 
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+
     def configure(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             del self.options.fPIC
@@ -128,7 +132,7 @@ class grpcConan(ConanFile):
         # tools.rmdir(os.path.join(self.package_folder, "lib", "cmake"))
         # tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
         tools.rmdir(os.path.join(self.package_folder, "share"))
-    
+
     def package_info(self):
         bindir = os.path.join(self.package_folder, "bin")
         self.output.info("Appending PATH environment variable: {}".format(bindir))
