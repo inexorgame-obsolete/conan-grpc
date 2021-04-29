@@ -1,10 +1,7 @@
 env:
   BPT_SPLIT_BY_BUILD_TYPES: "true"
 
-on:
-  push:
-    branches: ["main"]
-  pull_request:
+on: [push, pull_request]
 
 # bincrafters-conventions:gha-workflow-version:11
 # You can add custom environment variables above the version tag
