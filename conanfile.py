@@ -14,7 +14,7 @@ class grpcConan(ConanFile):
     homepage = "https://github.com/grpc/grpc"
     license = "Apache-2.0"
     exports_sources = ["CMakeLists.txt"]
-    generators = "cmake", "cmake_find_package_multi"
+    generators = "cmake", "cmake_find_package", "cmake_find_package_multi"
     short_paths = True
 
     settings = "os", "arch", "compiler", "build_type"
